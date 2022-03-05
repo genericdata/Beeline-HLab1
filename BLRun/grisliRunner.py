@@ -68,7 +68,7 @@ def run(RunnerObj):
 #             outFile, L, R, alphaMin,'\"'])
 
         cmdToRun = ' '.join([
-            'singularity exec ',
+            'singularity exec',
             '-B ' + str(Path.cwd())+':/runGRISLI/data/',
             '--pwd /runGRISLI/',
             str(RunnerObj.singularityImage),

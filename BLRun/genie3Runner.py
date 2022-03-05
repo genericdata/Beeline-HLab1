@@ -44,7 +44,7 @@ def run(RunnerObj):
     #                     '--inFile='+inputPath, '--outFile='+outPath, '\"'])
 
     cmdToRun = ' '.join([
-        'singularity exec --writable --no-home',
+        'singularity exec --no-home',
         '-B ' + str(Path.cwd())+':/data/',
         str(RunnerObj.singularityImage),
         '/bin/sh -c \" cd / ; time -v -o',

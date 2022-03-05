@@ -35,7 +35,7 @@ def run(RunnerObj):
     '''
     Function to run SINGE algorithm
     '''
-    inputPath = "data" + str(RunnerObj.inputDir).split(str(Path.cwd()))[1] + \
+    inputPath = "/usr/local/SINGE/data" + str(RunnerObj.inputDir).split(str(Path.cwd()))[1] + \
                     "/SINGE/"
     
 
@@ -79,7 +79,7 @@ def run(RunnerObj):
     for idx in range(len(colNames)):    
         outPath = str(outDir) + str(idx) + "/" 
         os.makedirs(outPath, exist_ok = True)
-        outFile = "data/" + outPath
+        outFile = "/usr/local/SINGE/data/" + outPath
         outFileSymlink = "out" + str(idx)
         inputFile = inputPath + "ExpressionData"+str(idx)+".csv"
         inputMat = inputPath + "ExpressionData"+str(idx)+".mat"
@@ -115,12 +115,22 @@ def run(RunnerObj):
         #                      inputMat, geneListMat, outFileSymlink, paramsFile, '\"'])
 
         cmdToRun = ' '.join([
-            'singularity exec --writable --no-home',
+            'singularity exec --no-home',
             '-B ' + str(Path.cwd()) + ':/usr/local/SINGE/data/',
             str(RunnerObj.singularityImage),
             '/bin/sh -vc \" cd /usr/local/SINGE/ ; echo \\"',
             params_str, '\\" >', paramsFile, '&&', symlink_out_file, '&&', convert_input_to_matfile,
             '&& time -v -o', "data/" + str(outDir) + 'time' + str(idx) + '.txt',
+            '/usr/local/SINGE/SINGE.sh /usr/local/MATLAB/MATLAB_Runtime/v94 standalone',
+            inputMat, geneListMat, outFileSymlink, paramsFile, '\"'])
+
+        cmdToRun = ' '.join([
+            'singularity exec ',
+            '-B ' + str(Path.cwd()) + ':/usr/local/SINGE/data/',
+            str(RunnerObj.singularityImage),
+            '/bin/sh -vc \" cd ${SLURM_TMPDIR} ; echo \\"',
+            params_str, '\\" >', paramsFile, '&&', symlink_out_file, '&&', convert_input_to_matfile,
+            '&& time -v -o', "/usr/local/SINGE/data/" + str(outDir) + 'time' + str(idx) + '.txt',
             '/usr/local/SINGE/SINGE.sh /usr/local/MATLAB/MATLAB_Runtime/v94 standalone',
             inputMat, geneListMat, outFileSymlink, paramsFile, '\"'])
 

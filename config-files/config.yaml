@@ -3,7 +3,7 @@
 input_settings:
 
     # Directory for singularity images, absolute path
-    sif_dir: "/tmp/global2/abt6_software/conda/regulatory_networks/beeline_cbf3e43/Beeline/images_singularity/"
+    sif_dir: "$(pwd)/images_singularity/"
 
     # Base input directory
     input_dir : "inputs"
@@ -23,6 +23,8 @@ input_settings:
     #              edge list format. Needed for evaluation.
     datasets:
         - name: "GSD"
+          # - name: "Maggie"
+          #- name: "arabidopsis"
           exprData: "ExpressionData.csv"
           cellData: "PseudoTime.csv"
           trueEdges: "refNetwork.csv"
@@ -41,7 +43,7 @@ input_settings:
               
         - name: "PIDC"
           params: 
-              should_run: [True]
+              should_run: [False]
 
 
         - name: "GRNVBEM"
@@ -52,18 +54,19 @@ input_settings:
 
         - name: "GENIE3"
           params: 
-              should_run: [True]
+              should_run: [False]
               
               
               
         - name: "GRNBOOST2"
           params: 
-              should_run: [True]
+              should_run: [False]
               
               
         - name: "PPCOR"
           params: 
-              should_run: [True]
+              should_run: [False]
+              #should_run: [False]
               # p-value cutoff
               # Used in parsing output
               pVal: [0.01]
@@ -71,32 +74,35 @@ input_settings:
                
         - name: "SCODE"
           params:
-              should_run: [True]
+              should_run: [False]
+                  #should_run: [False]
               z: [10]
               nIter: [1000]
               nRep: [6]
 
         - name: "SCNS"
           params: 
-              should_run: [False]
+              should_run: [True]
               
               
         - name: "SINCERITIES"
           params: 
-              should_run: [True]
+              should_run: [False]
+              #should_run: [False]
               nBins: [10]
               
               
         - name: "LEAP"
           params: 
-              should_run: [True]
+              should_run: [False]
+              #should_run: [False]
               # Default maxLag value is 0.33
               maxLag: [0.33]
              
               
         - name: "GRISLI"
           params: 
-              should_run: [False]
+              should_run: [True]
               L: [10]
               R: [3000]
               alphaMin: [0.0]

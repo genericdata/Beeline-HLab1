@@ -35,11 +35,13 @@ def run(RunnerObj):
     #                     inputPath, outPath, '\"'])
 
     cmdToRun = ' '.join([
-        'singularity exec --writable --no-home',
+        '/share/apps/singularity/bin/singularity exec',
+        '--env JULIA_DEPOT_PATH=/julia',
         '-B ' + str(Path.cwd()) + ':/data/',
         str(RunnerObj.singularityImage),
-        str(Path.cwd()) + '/bin/sh -c \" cd / ; time -v -o', "data/" + str(outDir) + 'time.txt',
-        'julia runPIDC.jl',
+        '/bin/sh -c \" cd / ;', 
+        'time -v -o', "data/" + str(outDir) + 'time.txt',
+        'julia -p 23 runPIDC.jl',
         inputPath, outPath, '\"'])
 
     print(cmdToRun)

@@ -25,26 +25,35 @@ def run(RunnerObj):
     '''
     Function to run GRNBOOST2 algorithm
     '''
-    inputPath = "data" + str(RunnerObj.inputDir).split(str(Path.cwd()))[1] + \
+    inputPath = "/data" + str(RunnerObj.inputDir).split(str(Path.cwd()))[1] + \
                     "/GRNBOOST2/ExpressionData.csv"
     # make output dirs if they do not exist:
     outDir = "outputs/"+str(RunnerObj.inputDir).split("inputs/")[1]+"/GRNBOOST2/"
     os.makedirs(outDir, exist_ok = True)
 
     
-    outPath = "data/" +  str(outDir) + 'outFile.txt'
+    outPath = "/data/" +  str(outDir) + 'outFile.txt'
     cmdToRun = ' '.join(['docker run --rm -v', str(Path.cwd())+':/data/ --expose=41269', 
                          'arboreto:base /bin/sh -c \"time -v -o', "data/" + str(outDir) + 'time.txt', 
                          'python runArboreto.py --algo=GRNBoost2',
                          '--inFile='+inputPath, '--outFile='+outPath, '\"'])
 
     cmdToRun = ' '.join([
-        'singularity exec --writable --no-home',
+        '/share/apps/singularity/bin/singularity exec',
         '-B ' + str(Path.cwd())+':/data/',
         str(RunnerObj.singularityImage),
         '/bin/sh -c \" cd / ; time -v -o', "data/" + str(outDir) + 'time.txt',
         'python runArboreto.py --algo=GRNBoost2',
         '--inFile=' + inputPath, '--outFile=' + outPath, '\"'])
+
+    cmdToRun = ' '.join([
+        '/share/apps/singularity/bin/singularity exec',
+        '-B ' + str(Path.cwd())+':/data/',
+        str(RunnerObj.singularityImage),
+        '/bin/sh -c \"cd ${SLURM_TMPDIR}; time -v -o', "/data/" + str(outDir) + 'time.txt',
+        'python /runArboreto.py --algo=GRNBoost2',
+        '--inFile=' + inputPath, '--outFile=' + outPath, '\"'])
+
 
     print(cmdToRun)
     os.system(cmdToRun)

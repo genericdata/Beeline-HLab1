@@ -65,7 +65,7 @@ def run(RunnerObj):
         #                      './GRNVBEM', inputPath+exprName, outPath, '\"'])
 
         cmdToRun = ' '.join([
-            'singularity exec --writable --no-home',
+            'MCR_CACHE_ROOT=$SLURM_TMPDIR singularity exec --no-home',
             '-B ' + str(Path.cwd())+':/VBEM/data/',
             str(RunnerObj.singularityImage),
             '/bin/sh -c \" cd /VBEM ; time -v -o',
