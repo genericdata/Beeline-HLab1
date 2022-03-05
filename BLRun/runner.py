@@ -11,6 +11,7 @@ import BLRun.ppcorRunner as PPCOR
 import BLRun.grisliRunner as GRISLI
 import BLRun.singeRunner as SINGE
 import BLRun.scribeRunner as SCRIBE
+import BLRun.cictRunner as CICT
 
 from pathlib import Path
 
@@ -27,7 +28,8 @@ InputMapper = {'SCODE':SCODE.generateInputs,
                'PPCOR':PPCOR.generateInputs,
                'GRISLI':GRISLI.generateInputs,
                'SINGE':SINGE.generateInputs,
-               'SCRIBE':SCRIBE.generateInputs}
+               'SCRIBE':SCRIBE.generateInputs,
+               'CICT':CICT.generateInputs}
 
 
 
@@ -45,7 +47,8 @@ AlgorithmMapper = {'SCODE':SCODE.run,
             'PPCOR':PPCOR.run,
             'GRISLI':GRISLI.run,
             'SINGE':SINGE.run,
-            'SCRIBE':SCRIBE.run}
+            'SCRIBE':SCRIBE.run,
+            'CICT':CICT.run}
 
 
 
@@ -62,7 +65,8 @@ OutputParser = {'SCODE':SCODE.parseOutput,
             'PPCOR':PPCOR.parseOutput,
             'GRISLI':GRISLI.parseOutput,
             'SINGE':SINGE.parseOutput,
-            'SCRIBE':SCRIBE.parseOutput}
+            'SCRIBE':SCRIBE.parseOutput,
+            'CICT':CICT.parseOutput}    
 
 
 
@@ -78,6 +82,7 @@ class Runner(object):
         self.exprData = params['exprData']
         self.cellData = params['cellData']
         self.singularityImage = params['singularityImage']
+        self.singularityOverlay = params.get('singularityOverlay','')
         
     def generateInputs(self):
         InputMapper[self.name](self)
