@@ -40,9 +40,10 @@ def run(RunnerObj):
 
     cmdToRun = ' '.join([
         'singularity exec --no-home',
-        '-B ' + str(Path.cwd())+':/ext3/CICT/data/',
+        '-B ' + str(Path.cwd())+':/ext3/data/',
+        '--overlay ' + str(RunnerObj.singularityOverlay) + ':ro',
         str(RunnerObj.singularityImage),
-        '/bin/sh -c \" cd /ext3/CICT ; time -v -o', "data/" + str(outDir) + 'time.txt', 'Rscript runCICT.R',
+        '/bin/sh -c \"source /ext3/env.sh; conda activate CICT; cd /ext3 ; time -v -o', "data/" + str(outDir) + 'time.txt', 'Rscript runCICT.R',
         inputPath, outPath, '\"'])
 
 
