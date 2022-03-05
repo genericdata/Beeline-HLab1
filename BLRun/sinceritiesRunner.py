@@ -64,7 +64,7 @@ def run(RunnerObj):
         #                      inputPath+inFile, outPath, '\"'])
 
         cmdToRun = ' '.join([
-            'singularity exec --writable --no-home',
+            'singularity exec --no-home',
             '-B ' + str(Path.cwd()) + ':/SINCERITIES/data/',
             str(RunnerObj.singularityImage),
             '/bin/sh -c \"cd /SINCERITIES ; time -v -o',

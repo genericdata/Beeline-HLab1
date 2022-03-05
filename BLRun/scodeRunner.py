@@ -78,10 +78,21 @@ def run(RunnerObj):
         #                      nGenes, z, nCells, nIter, nRep, '\"'])
 
         cmdToRun = ' '.join([
-            'singularity exec --writable --no-home',
+            'singularity exec --no-home',
             '-B ' + str(Path.cwd()) + ':/SCODE/data/',
             str(RunnerObj.singularityImage),
             '/bin/sh -c \"cd /SCODE/data ; time -v -o',
+            "data/" + str(outDir) + 'time' + str(idx) + '.txt', 'ruby run_R.rb',
+            inputPath + 'ExpressionData' + str(idx) + '.csv',
+            inputPath + 'PseudoTime' + str(idx) + '.csv',
+            'data/' + outDir + str(idx),
+            nGenes, z, nCells, nIter, nRep, '\"'])
+
+        cmdToRun = ' '.join([
+            'singularity exec --no-home',
+            '-B ' + str(Path.cwd()) + ':/SCODE/data/',
+            str(RunnerObj.singularityImage),
+            '/bin/sh -c \"cd /SCODE ; time -v -o',
             "data/" + str(outDir) + 'time' + str(idx) + '.txt', 'ruby run_R.rb',
             inputPath + 'ExpressionData' + str(idx) + '.csv',
             inputPath + 'PseudoTime' + str(idx) + '.csv',

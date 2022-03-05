@@ -39,7 +39,7 @@ def run(RunnerObj):
     #                     inputPath, outPath, '\"'])
 
     cmdToRun = ' '.join([
-        'singularity exec --writable --no-home',
+        'singularity exec --no-home',
         '-B ' + str(Path.cwd())+':/data/',
         str(RunnerObj.singularityImage),
         '/bin/sh -c \" cd / ; time -v -o', "data/" + str(outDir) + 'time.txt', 'Rscript runPPCOR.R',

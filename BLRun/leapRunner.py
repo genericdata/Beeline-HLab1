@@ -44,7 +44,7 @@ def run(RunnerObj):
     Requires the maxLag parameter
     '''
     
-    inputPath = "data" + str(RunnerObj.inputDir).split(str(Path.cwd()))[1]
+    inputPath = "/data" + str(RunnerObj.inputDir).split(str(Path.cwd()))[1]
     
     maxLag = str(RunnerObj.params['maxLag'])
     
@@ -58,7 +58,7 @@ def run(RunnerObj):
     colNames = PTData.columns
     for idx in range(len(colNames)):
         exprName = "/LEAP/ExpressionData"+str(idx)+".csv"
-        outPath = 'data/' +  str(outDir) + 'outFile'+str(idx)+'.txt'
+        outPath = '/data/' +  str(outDir) + 'outFile'+str(idx)+'.txt'
 
        
         cmdToRun = ' '.join(['docker run --rm -v', 
@@ -67,11 +67,19 @@ def run(RunnerObj):
                              inputPath+exprName, maxLag, outPath, '\"'])
 
         cmdToRun = ' '.join([
-            'singularity exec --writable --no-home',
+            'singularity exec --no-home',
             '-B ' + str(Path.cwd()) + ':/data/',
             str(RunnerObj.singularityImage),
             '/bin/sh -c \" cd / ; time -v -o',
             'data/' + str(outDir) + 'time' + str(idx) + '.txt', 'Rscript runLeap.R',
+            inputPath + exprName, maxLag, outPath, '\"'])
+
+        cmdToRun = ' '.join([
+            'singularity exec --no-home',
+            '-B ' + str(Path.cwd()) + ':/data/',
+            str(RunnerObj.singularityImage),
+            '/bin/sh -c \" cd ${SLURM_TMPDIR}; time -v -o',
+            '/data/' + str(outDir) + 'time' + str(idx) + '.txt', 'Rscript /runLeap.R',
             inputPath + exprName, maxLag, outPath, '\"'])
 
         print(cmdToRun)
