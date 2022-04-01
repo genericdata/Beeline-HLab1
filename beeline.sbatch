@@ -9,5 +9,5 @@
 module purge
 module load anaconda3/2020.07
 cd /scratch/bs4290/eric/
-python BLRunner.py --config config-files/config.yaml
+python BLRunner.py --config config-files/config_test.yaml
 

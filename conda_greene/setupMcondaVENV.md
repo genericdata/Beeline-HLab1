@@ -113,6 +113,5 @@ Singularity> conda activate CICT
 
 - Inside singularity: copy CICT source code and create data directory mount
 ```
-(CICT) Singularity> mkdir CICT
-(CICT) Singularity> cp ../Algorithms/CICT/runCICT.R /ext3/CICT
+(CICT) Singularity> cp ../Algorithms/CICT/runCICT.R /ext3
 ```
