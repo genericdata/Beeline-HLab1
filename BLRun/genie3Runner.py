@@ -42,12 +42,14 @@ def run(RunnerObj):
     #                     'arboreto:base /bin/sh -c \"time -v -o',
     #                     "data/" + str(outDir) + 'time.txt', 'python runArboreto.py --algo=GENIE3',
     #                     '--inFile='+inputPath, '--outFile='+outPath, '\"'])
-
+    daskTmp = "data/" +  str(outDir)
+    
     cmdToRun = ' '.join([
         'singularity exec --no-home',
         '-B ' + str(Path.cwd())+':/data/',
         str(RunnerObj.singularityImage),
-        '/bin/sh -c \" cd / ; time -v -o',
+        '/bin/sh -c \" cd / ; export DASK_TEMPORARY_DIRECTORY='+daskTmp+';', 
+        'time -v -o',
         "data/" + str(outDir) + 'time.txt', 'python runArboreto.py --algo=GENIE3',
         '--inFile='+inputPath, '--outFile='+outPath, '\"'])
 
