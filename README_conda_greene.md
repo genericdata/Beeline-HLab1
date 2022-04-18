@@ -65,8 +65,8 @@ cd /scratch/as15096/eric
 - May see some errors from TAR, which could be ignored.
 - After the script comples, check the file conda_greene/overlay-5GB-200K-beeline20211104.ext3
 ```
-cd /scratch/as15096/ericb
-./initialize_from_archive.sh
+cd /scratch/as15096/eric
+./setupMcondaSingularity_from_archive.sh
 ```
 
 ## II.2.a. RUN EVALUATION INTERACTIVELY ON GREENE HPC (do either II.2.a or II.2.b)
