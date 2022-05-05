@@ -36,7 +36,6 @@ def generateInputs(RunnerObj):
     # Identify cells in initial and final states from them
     # cells in initial states are the ones with the earliest time pts (<10th percentile)
     # cells in target states are the ones with the latest time pts (>90th percentile)
-
     StateDF = PseudoTimeDF.loc[BinExpression.index].max(axis='columns')
     initialStates =  open(RunnerObj.inputDir.joinpath("SCNS/initial.txt"),'w')                           
     for ix in StateDF[StateDF <= StateDF.quantile(0.1)].index:
