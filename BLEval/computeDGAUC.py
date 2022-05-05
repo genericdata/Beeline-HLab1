@@ -54,7 +54,6 @@ def PRROC(dataDict, inputSettings, directed = True, selfEdges = False, plotFlag 
             # check if the output rankedEdges file exists
             if Path(outDir + '/' +algo[0]+'/rankedEdges.csv').exists():
                  # Initialize Precsion
-
                 predDF = pd.read_csv(outDir + '/' +algo[0]+'/rankedEdges.csv', \
                                             sep = '\t', header =  0, index_col = None)
 
@@ -118,6 +117,330 @@ def PRROC(dataDict, inputSettings, directed = True, selfEdges = False, plotFlag 
     return AUPRC, AUROC
 
 def computeScores(trueEdgesDF, predEdgeDF, 
+                  directed = True, selfEdges = True):
+    '''        
+    Computes precision-recall and ROC curves
+    using scikit-learn for a given set of predictions in the 
+    form of a DataFrame.
+    
+    :param trueEdgesDF:   A pandas dataframe containing the true classes.The indices of this dataframe are all possible edgesin a graph formed using the genes in the given dataset. This dataframe only has one column to indicate the classlabel of an edge. If an edge is present in the reference network, it gets a class label of 1, else 0.
+    :type trueEdgesDF: DataFrame
+        
+    :param predEdgeDF:   A pandas dataframe containing the edge ranks from the prediced network. The indices of this dataframe are all possible edges.This dataframe only has one column to indicate the edge weightsin the predicted network. Higher the weight, higher the edge confidence.
+    :type predEdgeDF: DataFrame
+    
+    :param directed:   A flag to indicate whether to treat predictionsas directed edges (directed = True) or undirected edges (directed = False).
+    :type directed: bool
+        
+    :param selfEdges:   A flag to indicate whether to includeself-edges (selfEdges = True) or exclude self-edges (selfEdges = False) from evaluation.
+    :type selfEdges: bool
+        
+    :returns:
+            - prec: A list of precision values (for PR plot)
+            - recall: A list of precision values (for PR plot)
+            - fpr: A list of false positive rates (for ROC plot)
+            - tpr: A list of true positive rates (for ROC plot)
+            - AUPRC: Area under the precision-recall curve
+            - AUROC: Area under the ROC curve
+    '''
+
+    if directed:        
+        # Initialize dictionaries with all 
+        # possible edges
+        if selfEdges:
+            #print('self started')
+            #possibleEdges = list(product(np.unique(trueEdgesDF.loc[:,['Gene1','Gene2']]),
+            #                             repeat = 2))
+            possibleEdges = pd.DataFrame(list(product(np.unique(trueEdgesDF.loc[:,['Gene1','Gene2']]),
+                                         repeat = 2)))
+            #print('self end')
+        else:
+            #print('not self started')
+            #possibleEdges = list(permutations(np.unique(trueEdgesDF.loc[:,['Gene1','Gene2']]),
+            #                             r = 2))
+            possibleEdges = pd.DataFrame(list(permutations(np.unique(trueEdgesDF.loc[:,['Gene1','Gene2']]),
+                                              r = 2)))
+            #print('not self end')
+
+        #print(len(possibleEdges))
+        #TrueEdgeDict = {'|'.join(p):0 for p in possibleEdges}
+        #PredEdgeDict = {'|'.join(p):0 for p in possibleEdges}
+        edgeDict = dict((k, [0, 0]) for k in possibleEdges[0]+'|'+possibleEdges[1])# first element is true edge, second element is predicted edge
+        #print(len(TrueEdgeDict))
+        
+        # Compute TrueEdgeDict Dictionary
+        # 1 if edge is present in the ground-truth
+        # 0 if edge is not present in the ground-truth
+        #for key in TrueEdgeDict.keys():
+        #    if len(trueEdgesDF.loc[(trueEdgesDF['Gene1'] == key.split('|')[0]) &
+        #           (trueEdgesDF['Gene2'] == key.split('|')[1])])>0:
+        #            TrueEdgeDict[key] = 1
+        trueEdgeKeys = trueEdgesDF['Gene1'].astype(str) + '|' + trueEdgesDF['Gene2']
+        for key in trueEdgeKeys:
+            if key in edgeDict:
+                edgeDict[key][0] = 1
+        #print('done TrueEdgeDict')
+        
+        #print(predEdgeDF.EdgeWeight.values[0])
+        #for key in PredEdgeDict.keys():
+        #    subDF = predEdgeDF.loc[(predEdgeDF['Gene1'] == key.split('|')[0]) &
+        #                       (predEdgeDF['Gene2'] == key.split('|')[1])]
+        #    if len(subDF)>0:
+        #        PredEdgeDict[key] = np.abs(subDF.EdgeWeight.values[0])
+        #        print(subDF.EdgeWeight.values)
+        predEdgeKeys = predEdgeDF['Gene1'].astype(str) + '|' + predEdgeDF['Gene2']
+        predEdgeValues =  np.abs(predEdgeDF.EdgeWeight)
+        for k,v in zip(predEdgeKeys,predEdgeValues):
+            if k in edgeDict:
+                edgeDict[k][1] = v
+        #print('done PredEdgeDict')
+    # if undirected
+    else:
+        
+        # Initialize dictionaries with all 
+        # possible edges
+        if selfEdges:
+            #possibleEdges = list(combinations_with_replacement(np.unique(trueEdgesDF.loc[:,['Gene1','Gene2']]),
+            #                                                   r = 2))
+            possibleEdges = pd.DataFrame(list(combinations_with_replacement(np.unique(trueEdgesDF.loc[:,['Gene1','Gene2']]),
+                                                               r = 2)))
+        else:
+            #possibleEdges = list(combinations(np.unique(trueEdgesDF.loc[:,['Gene1','Gene2']]),
+            #                                                   r = 2))
+            possibleEdges = pd.DataFrame(list(combinations(np.unique(trueEdgesDF.loc[:,['Gene1','Gene2']]),
+                                                               r = 2)))
+        #TrueEdgeDict = {'|'.join(p):0 for p in possibleEdges}
+        #PredEdgeDict = {'|'.join(p):0 for p in possibleEdges}
+        edgeDict = dict((k, [0, 0]) for k in possibleEdges[0]+'|'+possibleEdges[1])# first element is true edge, second element is predicted edge
+
+        # Compute TrueEdgeDict Dictionary
+        # 1 if edge is present in the ground-truth
+        # 0 if edge is not present in the ground-truth
+
+        #for key in TrueEdgeDict.keys():
+        #    if len(trueEdgesDF.loc[((trueEdgesDF['Gene1'] == key.split('|')[0]) &
+        #                   (trueEdgesDF['Gene2'] == key.split('|')[1])) |
+        #                      ((trueEdgesDF['Gene2'] == key.split('|')[0]) &
+        #                   (trueEdgesDF['Gene1'] == key.split('|')[1]))]) > 0:
+        #        TrueEdgeDict[key] = 1  
+        trueEdgeKeys = pd.concat([trueEdgesDF['Gene1'].astype(str) + '|' + trueEdgesDF['Gene2'],
+                                  trueEdgesDF['Gene2'].astype(str) + '|' + trueEdgesDF['Gene1']],
+                                 ignore_index=True)
+        for key in trueEdgeKeys:
+            if key in edgeDict:
+                edgeDict[key][0] = 1
+        #print('done TrueEdgeDict')
+
+        # Compute PredEdgeDict Dictionary
+        # from predEdgeDF
+
+        #for key in PredEdgeDict.keys():
+        #    subDF = predEdgeDF.loc[((predEdgeDF['Gene1'] == key.split('|')[0]) &
+        #                       (predEdgeDF['Gene2'] == key.split('|')[1])) |
+        #                      ((predEdgeDF['Gene2'] == key.split('|')[0]) &
+        #                       (predEdgeDF['Gene1'] == key.split('|')[1]))]
+        #    if len(subDF)>0:
+        #        PredEdgeDict[key] = max(np.abs(subDF.EdgeWeight.values))
+        
+        # take max egde weights of two directions
+        predEdgeDF_BiDir = pd.concat(predEdgeDF,
+                                     predEdgeDF.rename(columns={"Gene1": "Gene2", "Gene2": "Gene1"},
+                                                       copy=TRUE),
+                                     ignore_index=True)
+        predEdgeDF_BiDir['EdgeWeight'] = np.abs(predEdgeDF_BiDir['EdgeWeight'])
+        predEdgeDF_max = predEdgeDF_BiDir.groupby(['Gene1','Gene2'])['EdgeWeight'].max().reset_index()
+        predEdgeKeys = predEdgeDF_max['Gene1'].astype(str) + '|' + predEdgeDF_max['Gene2']
+        predEdgeValues =  predEdgesDF_max.EdgeWeight.values
+        for k,v in zip(predEdgeKeys,predEdgeValues):
+            if k in edgeDict:
+                edgeDict[k][1] = v
+        #print('done PredEdgeDict')
+
+                
+    # Combine into one dataframe
+    # to pass it to sklearn
+    #outDF = pd.DataFrame([TrueEdgeDict,PredEdgeDict]).T
+    #outDF.columns = ['TrueEdges','PredEdges']
+    outDF = pd.DataFrame.from_dict(edgeDict,orient='index',columns=['TrueEdges','PredEdges'])
+    print(outDF.iloc[0:10])
+    prroc = importr('PRROC')
+    prCurve = prroc.pr_curve(scores_class0 = FloatVector(list(outDF['PredEdges'].values)), 
+              weights_class0 = FloatVector(list(outDF['TrueEdges'].values)))
+
+    fpr, tpr, thresholds = roc_curve(y_true=outDF['TrueEdges'],
+                                     y_score=outDF['PredEdges'], pos_label=1)
+
+    prec, recall, thresholds = precision_recall_curve(y_true=outDF['TrueEdges'],
+                                                      probas_pred=outDF['PredEdges'], pos_label=1)
+    
+    return prec, recall, fpr, tpr, prCurve[2][0], auc(fpr, tpr)
+
+
+def computeScores_sshv1(trueEdgesDF, predEdgeDF, 
+                  directed = True, selfEdges = True):
+    '''        
+    Computes precision-recall and ROC curves
+    using scikit-learn for a given set of predictions in the 
+    form of a DataFrame.
+    
+    :param trueEdgesDF:   A pandas dataframe containing the true classes.The indices of this dataframe are all possible edgesin a graph formed using the genes in the given dataset. This dataframe only has one column to indicate the classlabel of an edge. If an edge is present in the reference network, it gets a class label of 1, else 0.
+    :type trueEdgesDF: DataFrame
+        
+    :param predEdgeDF:   A pandas dataframe containing the edge ranks from the prediced network. The indices of this dataframe are all possible edges.This dataframe only has one column to indicate the edge weightsin the predicted network. Higher the weight, higher the edge confidence.
+    :type predEdgeDF: DataFrame
+    
+    :param directed:   A flag to indicate whether to treat predictionsas directed edges (directed = True) or undirected edges (directed = False).
+    :type directed: bool
+        
+    :param selfEdges:   A flag to indicate whether to includeself-edges (selfEdges = True) or exclude self-edges (selfEdges = False) from evaluation.
+    :type selfEdges: bool
+        
+    :returns:
+            - prec: A list of precision values (for PR plot)
+            - recall: A list of precision values (for PR plot)
+            - fpr: A list of false positive rates (for ROC plot)
+            - tpr: A list of true positive rates (for ROC plot)
+            - AUPRC: Area under the precision-recall curve
+            - AUROC: Area under the ROC curve
+    '''
+
+    if directed:        
+        # Initialize dictionaries with all 
+        # possible edges
+        if selfEdges:
+            #print('self started')
+            #possibleEdges = list(product(np.unique(trueEdgesDF.loc[:,['Gene1','Gene2']]),
+            #                             repeat = 2))
+            possibleEdges = pd.DataFrame(list(product(np.unique(trueEdgesDF.loc[:,['Gene1','Gene2']]),
+                                         repeat = 2)))
+            #print('self end')
+        else:
+            #print('not self started')
+            #possibleEdges = list(permutations(np.unique(trueEdgesDF.loc[:,['Gene1','Gene2']]),
+            #                             r = 2))
+            possibleEdges = pd.DataFrame(list(permutations(np.unique(trueEdgesDF.loc[:,['Gene1','Gene2']]),
+                                              r = 2)))
+            #print('not self end')
+
+        #print(len(possibleEdges))
+        #TrueEdgeDict = {'|'.join(p):0 for p in possibleEdges}
+        #PredEdgeDict = {'|'.join(p):0 for p in possibleEdges}
+        TrueEdgeDict = dict.fromkeys(possibleEdges[0]+'|'+possibleEdges[1],0)
+        PredEdgeDict = TrueEdgeDict.copy()
+        #print(len(TrueEdgeDict))
+        
+        # Compute TrueEdgeDict Dictionary
+        # 1 if edge is present in the ground-truth
+        # 0 if edge is not present in the ground-truth
+        #for key in TrueEdgeDict.keys():
+        #    if len(trueEdgesDF.loc[(trueEdgesDF['Gene1'] == key.split('|')[0]) &
+        #           (trueEdgesDF['Gene2'] == key.split('|')[1])])>0:
+        #            TrueEdgeDict[key] = 1
+        trueEdgeKeys = trueEdgesDF['Gene1'].astype(str) + '|' + trueEdgesDF['Gene2']
+        for key in trueEdgeKeys:
+            if key in TrueEdgeDict:
+                TrueEdgeDict[key] = 1
+        #print('done TrueEdgeDict')
+        
+        #print(predEdgeDF.EdgeWeight.values[0])
+        #for key in PredEdgeDict.keys():
+        #    subDF = predEdgeDF.loc[(predEdgeDF['Gene1'] == key.split('|')[0]) &
+        #                       (predEdgeDF['Gene2'] == key.split('|')[1])]
+        #    if len(subDF)>0:
+        #        PredEdgeDict[key] = np.abs(subDF.EdgeWeight.values[0])
+        #        print(subDF.EdgeWeight.values)
+        predEdgeKeys = predEdgeDF['Gene1'].astype(str) + '|' + predEdgeDF['Gene2']
+        predEdgeValues =  np.abs(predEdgeDF.EdgeWeight)
+        for k,v in zip(predEdgeKeys,predEdgeValues):
+            if k in PredEdgeDict:
+                PredEdgeDict[k] = v
+        #print('done PredEdgeDict')
+    # if undirected
+    else:
+        
+        # Initialize dictionaries with all 
+        # possible edges
+        if selfEdges:
+            #possibleEdges = list(combinations_with_replacement(np.unique(trueEdgesDF.loc[:,['Gene1','Gene2']]),
+            #                                                   r = 2))
+            possibleEdges = pd.DataFrame(list(combinations_with_replacement(np.unique(trueEdgesDF.loc[:,['Gene1','Gene2']]),
+                                                               r = 2)))
+        else:
+            #possibleEdges = list(combinations(np.unique(trueEdgesDF.loc[:,['Gene1','Gene2']]),
+            #                                                   r = 2))
+            possibleEdges = pd.DataFrame(list(combinations(np.unique(trueEdgesDF.loc[:,['Gene1','Gene2']]),
+                                                               r = 2)))
+        #TrueEdgeDict = {'|'.join(p):0 for p in possibleEdges}
+        #PredEdgeDict = {'|'.join(p):0 for p in possibleEdges}
+        TrueEdgeDict = dict.fromkeys(possibleEdges[0]+'|'+possibleEdges[1],0)
+        PredEdgeDict = TrueEdgeDict.copy()
+
+
+        # Compute TrueEdgeDict Dictionary
+        # 1 if edge is present in the ground-truth
+        # 0 if edge is not present in the ground-truth
+
+        #for key in TrueEdgeDict.keys():
+        #    if len(trueEdgesDF.loc[((trueEdgesDF['Gene1'] == key.split('|')[0]) &
+        #                   (trueEdgesDF['Gene2'] == key.split('|')[1])) |
+        #                      ((trueEdgesDF['Gene2'] == key.split('|')[0]) &
+        #                   (trueEdgesDF['Gene1'] == key.split('|')[1]))]) > 0:
+        #        TrueEdgeDict[key] = 1  
+        trueEdgeKeys = pd.concat([trueEdgesDF['Gene1'].astype(str) + '|' + trueEdgesDF['Gene2'],
+                                  trueEdgesDF['Gene2'].astype(str) + '|' + trueEdgesDF['Gene1']],
+                                 ignore_index=True)
+        for key in trueEdgeKeys:
+            if key in TrueEdgeDict:
+                TrueEdgeDict[key] = 1
+        #print('done TrueEdgeDict')
+
+        # Compute PredEdgeDict Dictionary
+        # from predEdgeDF
+
+        #for key in PredEdgeDict.keys():
+        #    subDF = predEdgeDF.loc[((predEdgeDF['Gene1'] == key.split('|')[0]) &
+        #                       (predEdgeDF['Gene2'] == key.split('|')[1])) |
+        #                      ((predEdgeDF['Gene2'] == key.split('|')[0]) &
+        #                       (predEdgeDF['Gene1'] == key.split('|')[1]))]
+        #    if len(subDF)>0:
+        #        PredEdgeDict[key] = max(np.abs(subDF.EdgeWeight.values))
+        # take max egde weights of two directions
+        predEdgeDF_BiDir = pd.concat(predEdgeDF,
+                                     predEdgeDF.rename(columns={"Gene1": "Gene2", "Gene2": "Gene1"},
+                                                       copy=TRUE),
+                                     ignore_index=True)
+        predEdgeDF_BiDir['EdgeWeight'] = np.abs(predEdgeDF_BiDir['EdgeWeight'])
+        predEdgeDF_max = predEdgeDF_BiDir.groupby(['Gene1','Gene2'])['EdgeWeight'].max().reset_index()
+        predEdgeKeys = predEdgeDF_max['Gene1'].astype(str) + '|' + predEdgeDF_max['Gene2']
+        predEdgeValues =  predEdgesDF_max.EdgeWeight.values
+        for k,v in zip(predEdgeKeys,predEdgeValues):
+            if k in PredEdgeDict:
+                PredEdgeDict[k] = v
+        #print('done PredEdgeDict')
+
+                
+    # Combine into one dataframe
+    # to pass it to sklearn
+    #outDF = pd.DataFrame([TrueEdgeDict,PredEdgeDict]).T
+    #outDF.columns = ['TrueEdges','PredEdges']
+    outDF = pd.concat([pd.DataFrame.from_dict(TrueEdgeDict,orient='index',columns=['TrueEdges']),
+                       pd.DataFrame.from_dict(PredEdgeDict,orient='index',columns=['PredEdges'])],
+                      axis=1, join="outer")
+    print(outDF.iloc[0:10])
+    prroc = importr('PRROC')
+    prCurve = prroc.pr_curve(scores_class0 = FloatVector(list(outDF['PredEdges'].values)), 
+              weights_class0 = FloatVector(list(outDF['TrueEdges'].values)))
+
+    fpr, tpr, thresholds = roc_curve(y_true=outDF['TrueEdges'],
+                                     y_score=outDF['PredEdges'], pos_label=1)
+
+    prec, recall, thresholds = precision_recall_curve(y_true=outDF['TrueEdges'],
+                                                      probas_pred=outDF['PredEdges'], pos_label=1)
+    
+    return prec, recall, fpr, tpr, prCurve[2][0], auc(fpr, tpr)
+
+
+def computeScores_old(trueEdgesDF, predEdgeDF, 
                   directed = True, selfEdges = True):
     '''        
     Computes precision-recall and ROC curves
