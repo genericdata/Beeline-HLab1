@@ -21,7 +21,6 @@ def generateInputs(RunnerObj):
                                      header = 0, index_col = 0)
     PTData = pd.read_csv(RunnerObj.inputDir.joinpath(RunnerObj.cellData),
                              header = 0, index_col = 0)
-
     colNames = PTData.columns
     for idx in range(len(colNames)):
         # Select cells belonging to each pseudotime trajectory
