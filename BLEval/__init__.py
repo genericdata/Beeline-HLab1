@@ -332,7 +332,7 @@ class ConfigParser(object):
             An object of class :class:`BLEval.BLEval`.
 
         '''
-        config_map = yaml.load(config_file_handle)
+        config_map = yaml.load(config_file_handle,Loader=yaml.FullLoader)
         return BLEval(
             ConfigParser.__parse_input_settings(
                 config_map['input_settings']),
