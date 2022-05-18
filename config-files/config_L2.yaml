@@ -25,40 +25,48 @@ input_settings:
     
     datasets:
 
-    #    - name: "dream5_1"
-    #      exprData: "ExpressionData.csv"
-    #      cellData: "PseudoTime.csv"
-    #      trueEdges: "refNetwork.csv"
+#        - name: "dream5_1"
+#          exprData: "ExpressionData.csv"
+#          cellData: "PseudoTime.csv"
+#          trueEdges: "refNetwork.csv"
 
-    #    - name: "dream5_3"
-    #      exprData: "ExpressionData.csv"
-    #      cellData: "PseudoTime.csv"
-    #      trueEdges: "refNetwork.csv"
+#        - name: "dream5_3"
+#          exprData: "ExpressionData.csv"
+#          cellData: "PseudoTime.csv"
+#          trueEdges: "refNetwork.csv"
           
-    #    - name: "dream5_4"
-    #      exprData: "ExpressionData.csv"
-    #      cellData: "PseudoTime.csv"
-    #      trueEdges: "refNetwork.csv"
+ #       - name: "dream5_4"
+ #         exprData: "ExpressionData.csv"
+ #         cellData: "PseudoTime.csv"
+ #         trueEdges: "refNetwork.csv"
           
-        - name: "hESC"
-          exprData: "ExpressionData.csv"
-          cellData: "PseudoTime.csv"
-          trueEdges: "refNetwork.csv"
+ #       - name: "hESC"
+ #         exprData: "ExpressionData.csv"
+ #         cellData: "PseudoTime.csv"
+ #         trueEdges: "refNetwork.csv"
 
-        - name: "hHEP"
+ #       - name: "hHEP"
+ #         exprData: "ExpressionData.csv"
+ #         cellData: "PseudoTime.csv"
+ #         trueEdges: "refNetwork.csv"
+          
+ #       - name: "mESC"
+ #         exprData: "ExpressionData.csv"
+ #         cellData: "PseudoTime.csv"
+ #         trueEdges: "refNetwork.csv"
+          
+        - name: "mDC"
           exprData: "ExpressionData.csv"
           cellData: "PseudoTime.csv"
           trueEdges: "refNetwork.csv"
           
-        - name: "mESC"
-          exprData: "ExpressionData.csv"
-          cellData: "PseudoTime.csv"
-          trueEdges: "refNetwork.csv"
+ #       - name: "mHSC-E"
+ #         exprData: "ExpressionData.csv"
+ #         cellData: "PseudoTime.csv"
+ #         trueEdges: "refNetwork.csv"
           
-        - name: "mHSC-E"
-          exprData: "ExpressionData.csv"
-          cellData: "PseudoTime.csv"
-          trueEdges: "refNetwork.csv"
+          
+
           
  
     # Denotes a list of algorithms to run. Each has the following parameters:
@@ -101,18 +109,18 @@ input_settings:
 
         - name: "GENIE3"
           params: 
-              should_run: [False]  #<===
+              should_run: [True]  #<===
               
               
               
         - name: "GRNBOOST2"
           params: 
-              should_run: [False] #<===
+              should_run: [True] #<===
               
               
         - name: "PPCOR"
           params: 
-              should_run: [False]  #<====
+              should_run: [True]  #<====
               #should_run: [False]
               # p-value cutoff
               # Used in parsing output
@@ -129,12 +137,12 @@ input_settings:
 
         - name: "SCNS"
           params: 
-              should_run: [True]
+              should_run: [False]#<====Error
               
               
         - name: "SINCERITIES"
           params: 
-              should_run: [True]  #<====Error
+              should_run: [False]  #<====Error
               nBins: [10]
               
               
