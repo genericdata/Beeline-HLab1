@@ -38,6 +38,13 @@ def get_parser() -> argparse.ArgumentParser:
     parser.add_argument('--config', default='config.yaml',
         help='Path to config file')
 
+    parser.add_argument('--dataset_names', default='dream5_1',
+        help='Comma delimited list of datasets from the config file to run')
+
+    parser.add_argument('--algorithm_names', default='GENIE3',
+        help='Comma delimited list of algorithms from the config file to run; \
+              overrides the should_run parameter in the config file for the algorithms')
+    
     return parser
 
 def parse_arguments():
@@ -56,10 +63,8 @@ def main():
 
 
     with open(config_file, 'r') as conf:
-        evaluation = br.ConfigParser.parse(conf)
-    print(evaluation)
+        evaluation = br.ConfigParser.parse(conf,opts)
     print('Evaluation started')
-
 
     for idx in range(len(evaluation.runners)):
         evaluation.runners[idx].generateInputs()
