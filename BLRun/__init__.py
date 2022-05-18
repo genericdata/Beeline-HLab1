@@ -79,6 +79,7 @@ class BLRun(object):
         runners: Dict[int, Runner] = defaultdict(list)
         order = 0
         for dataset in self.input_settings.datasets:
+            print('=====Using dataset '+dataset['name'])
             for runner in self.input_settings.algorithms:
                 data = {}
                 data['name'] = runner[0]
@@ -94,6 +95,8 @@ class BLRun(object):
                         data['params']['should_run'] is False:
                     print("Skipping %s" % (data['name']))
                     continue
+                else:
+                    print("Running %s" % (data['name']))
 
                 runners[order] = Runner(data)
                 order += 1            
@@ -131,27 +134,43 @@ class ConfigParser(object):
     of parameters for the pipeline
     '''
     @staticmethod
-    def parse(config_file_handle) -> BLRun:
+    def parse(config_file_handle,cmd_args) -> BLRun:
         config_map = yaml.load(config_file_handle)
         return BLRun(
             ConfigParser.__parse_input_settings(
-                config_map['input_settings']),
+                config_map['input_settings'],
+                cmd_args),
             ConfigParser.__parse_output_settings(
                 config_map['output_settings']))
 
     @staticmethod
-    def __parse_input_settings(input_settings_map) -> InputSettings:
+    def __parse_input_settings(input_settings_map,cmd_args) -> InputSettings:
         input_dir = input_settings_map['input_dir']
         dataset_dir = input_settings_map['dataset_dir']
-        datasets = input_settings_map['datasets']
+        datasets_all = input_settings_map['datasets']
         sif_dir = input_settings_map['sif_dir']
         overlay_dir = input_settings_map['overlay_dir']
+        algorithms_all = input_settings_map['algorithms']
+        
+        datasets_select = cmd_args.dataset_names.split(',')
+        datasets = []
+        for dataset in datasets_all:
+            if (dataset['name'] in datasets_select):
+                datasets.append(dataset)
+        algorithms_select = cmd_args.algorithm_names.split(',')
+        algorithm_list = []
+        for algorithm in algorithms_all:
+            if (algorithm['name'] in algorithms_select):
+                algorithm['params']['should_run'] = [True]
+            else:
+                algorithm['params']['should_run'] = [False]
+            algorithm_list.append(algorithm)
 
         return InputSettings(
                 Path(input_dir, dataset_dir),
                 datasets,
                 ConfigParser.__parse_algorithms(
-                input_settings_map['algorithms']),
+                    algorithm_list),
                 Path(sif_dir),
                 Path(overlay_dir)
         )
