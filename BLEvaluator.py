@@ -31,7 +31,14 @@ def get_parser() -> argparse.ArgumentParser:
     parser.add_argument('-c','--config', default='config.yaml',
         help="Configuration file containing list of datasets "
               "algorithms and output specifications.\n")
-    
+
+    parser.add_argument('--dataset_names', default='dream5_1',
+        help='Comma delimited list of datasets from the config file to run')
+
+    parser.add_argument('--algorithm_names', default='GENIE3',
+        help='Comma delimited list of algorithms from the config file to run; \
+              overrides the should_run parameter in the config file for the algorithms')
+
     parser.add_argument('-a', '--auc', action="store_true", default=False,
         help="Compute median of areas under Precision-Recall and ROC curves.\n")
     
@@ -82,7 +89,7 @@ def main():
     evalConfig = None
 
     with open(config_file, 'r') as conf:
-        evalConfig = ev.ConfigParser.parse(conf)
+        evalConfig = ev.ConfigParser.parse(conf,opts)
         
     print('\nPost-run evaluation started...')
     evalSummarizer = ev.BLEval(evalConfig.input_settings, evalConfig.output_settings)
