@@ -6,3 +6,7 @@ src/.*
 .DS_Store
 .idea/
 *~
+config-files-split/
+images_singularity/
+images_singularity_overlay/
+slurm/
