@@ -12,6 +12,7 @@ import BLRun.grisliRunner as GRISLI
 import BLRun.singeRunner as SINGE
 import BLRun.scribeRunner as SCRIBE
 import BLRun.cictRunner as CICT
+import BLRun.randomRunner as RANDOM
 
 from pathlib import Path
 
@@ -29,7 +30,8 @@ InputMapper = {'SCODE':SCODE.generateInputs,
                'GRISLI':GRISLI.generateInputs,
                'SINGE':SINGE.generateInputs,
                'SCRIBE':SCRIBE.generateInputs,
-               'CICT':CICT.generateInputs}
+               'CICT':CICT.generateInputs,
+               'RANDOM':RANDOM.generateInputs}
 
 
 
@@ -48,7 +50,8 @@ AlgorithmMapper = {'SCODE':SCODE.run,
             'GRISLI':GRISLI.run,
             'SINGE':SINGE.run,
             'SCRIBE':SCRIBE.run,
-            'CICT':CICT.run}
+            'CICT':CICT.run,
+            'RANDOM':RANDOM.run}
 
 
 
@@ -66,7 +69,8 @@ OutputParser = {'SCODE':SCODE.parseOutput,
             'GRISLI':GRISLI.parseOutput,
             'SINGE':SINGE.parseOutput,
             'SCRIBE':SCRIBE.parseOutput,
-            'CICT':CICT.parseOutput}    
+            'CICT':CICT.parseOutput,
+            'RANDOM':RANDOM.parseOutput}    
 
 
 
