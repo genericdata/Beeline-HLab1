@@ -34,31 +34,36 @@ ln -s ARBORETO.sif GENIE3.sif
 ln -s ARBORETO.sif GRNBOOST2.sif
 cd $BASEDIR
 
+# Build CICT, random classifier
 cd $BASEDIR
-for ALG in CICT ; do
-   cp ${SRC_SIF} ${SIF_DIR}/${ALG}.sif
-   cp -rp ${SRC_EXT3} ${EXT3_DIR}/${ALG}.ext3.gz
-   gunzip ${EXT3_DIR}/${ALG}.ext3.gz
-   cd ${BASEDIR}; singularity exec --overlay ${EXT3_DIR}/${ALG}.ext3 ${SIF_DIR}/${ALG}.sif \
-		/bin/sh -c "
+cp ${SRC_SIF} ${SIF_DIR}/CICT.sif
+cp -rp ${SRC_EXT3} ${EXT3_DIR}/CICT.ext3.gz
+gunzip ${EXT3_DIR}/CICT.ext3.gz
+cd ${BASEDIR}; singularity exec --overlay ${EXT3_DIR}/CICT.ext3 ${SIF_DIR}/CICT.sif \
+			   /bin/sh -c "
 sh ${CONDA_DIR}/Miniconda3-py37_4.10.3-Linux-x86_64.sh -b -p /ext3/miniconda3
 cp ${CONDA_DIR}/overlay_ext3_mc3.sh /ext3/env.sh
 source /ext3/env.sh
-conda create -y --name ${ALG} -c conda-forge r-base=4.1.1
-conda activate ${ALG}
+conda create -y --name CICT -c conda-forge r-base=4.1.1
+conda activate CICT
 conda install -y -c conda-forge libgit2 gmp time
 R -e \"install.packages('remotes',repos='https://cloud.r-project.org')\"
-R -e \"remotes::install_deps('Algorithms/${ALG}')\"
-cp Algorithms/${ALG}/run${ALG}.R /ext3
-cp Algorithms/${ALG}/${ALG}.R /ext3
+R -e \"remotes::install_deps('Algorithms/CICT')\"
+cp Algorithms/CICT/runCICT.R /ext3
+cp Algorithms/CICT/CICT.R /ext3
+cp Algorithms/RANDOM/runRandom.R /ext3
 "
-   echo "Singularity files for ${ALG}: image is ${SIF_DIR}/${ALG}.sif, overlay is ${EXT3_DIR}/${ALG}.ext3"
+echo "Singularity files for CICT: image is ${SIF_DIR}/CICT.sif, overlay is ${EXT3_DIR}/CICT.ext3"
 
-   # For sharing with another user only: package the entire environment in a TAR file to share
-    cd ${BASEDIR}; singularity exec --overlay ${EXT3_DIR}/${ALG}.ext3 ${SIF_DIR}/${ALG}.sif \
-		/bin/sh -c "
-cd ${EXT3_DIR}; tar -C /ext3 -cvf ${ALG}.ext3.tar .
+# For sharing with another user only: package the entire environment in a TAR file to share
+cd ${BASEDIR}; singularity exec --overlay ${EXT3_DIR}/CICT.ext3 ${SIF_DIR}/CICT.sif \
+			   /bin/sh -c "
+cd ${EXT3_DIR}; tar -C /ext3 -cvf CICT.ext3.tar .
 "
 done
 
+cd $SIF_DIR
+ln -s CICT.sif RANDOM.sif
+cd $EXT3_DIR
+ln -s CICT.ext3 RANDOM.ext3
 cd $BASEDIR
