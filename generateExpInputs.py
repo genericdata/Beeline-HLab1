@@ -6,6 +6,7 @@ import argparse
 import pandas as pd
 from itertools import product, permutations, combinations, combinations_with_replacement
 import numpy as np
+import random
 
 def get_parser() -> argparse.ArgumentParser:
     '''
@@ -41,6 +42,8 @@ def get_parser() -> argparse.ArgumentParser:
     parser.add_argument('-n','--numGenes', type=int, default = 500,
                         help='Number of genes to add. Default=500. \n')
 
+    parser.add_argument('-r','--numRandGenes', type=int, default = 500,
+                        help='Number of random genes to add. Default=500. \n')
 
     parser.add_argument('-t','--TFs', action='store_true', default = False,
                         help='Add all significantly varying TFs. Default = False.\n')
@@ -69,6 +72,7 @@ tf_file = opts.TFFile
 pval_cutoff = opts.pVal
 bf_corr = opts.BFcorr
 num_genes = opts.numGenes
+num_rand_genes = opts.numRandGenes
 sort_by_variance = True
 print("\nReading %s" % (expr_file))
 expr_df = pd.read_csv(expr_file, header=0, index_col=0)
@@ -144,12 +148,24 @@ if num_genes > 0:
         variable_genes_new = gene_df.iloc[:num_genes].index.values
     variable_genes = set(variable_genes_new) | set(variable_tfs)
 
-print("\nRestricting to %d genes" % (len(variable_genes)))
-expr_df = expr_df.loc[variable_genes]
+print("\nSelected %d genes: %d variable genes and %d TFs" % (len(variable_genes),
+                                                             len(variable_genes_new),
+                                                             len(variable_tfs))
+not_selected_genes = set(gene_df.index.values) - variable_genes
+if num_rand_genes > 0:
+    if num_rand_genes > len(not_selected_genes):
+        rand_genes = not_selected_genes
+        pass
+    else:
+        rand_genes = random.sample(not_selected_genes,num_rand_genes)
+print("\nAdded %d random genes from %d non-selected genes " % (len(rand_genes),
+                                                               len(not_selected_genes)))
+
+output_genes = set(variable_genes) | set(rand_genes)
+expr_df = expr_df.loc[output_genes]
 print("\nNew shape of Expression Data %d x %d" % (expr_df.shape[0],expr_df.shape[1]))
 
 expr_df.to_csv(opts.outPrefix+'-ExpressionData.csv')
-
 
 if opts.netFile != 'None':
     netFile = opts.netFile
@@ -163,6 +179,9 @@ if opts.netFile != 'None':
     allNodes = set(netDF.Gene1.unique()).union(set(netDF.Gene2.unique()))
     nTFs = expr_df[expr_df.index.isin(netDF.Gene1.unique())].shape[0]
     nGenes = expr_df[expr_df.index.isin(allNodes)].shape[0]
-    print("\n#TFs: %d, #Genes: %d, #Edges: %d, Density: %.3f" % (nTFs,nGenes,netDF.shape[0],netDF.shape[0]/((nTFs*nGenes)-nTFs)))
+    print("\nNetwork statistics:")
+    print("#TFs: %d, #Genes: %d, #Edges: %d, #Possible edges: %d, Density: %.3f" % (nTFs,nGenes,netDF.shape[0],
+                                                                                    nTFs*nGenes-nTFs,
+                                                                                    netDF.shape[0]/((nTFs*nGenes)-nTFs)))
 
 print("\n\nExiting...\n")
