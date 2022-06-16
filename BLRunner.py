@@ -38,12 +38,15 @@ def get_parser() -> argparse.ArgumentParser:
     parser.add_argument('--config', default='config.yaml',
         help='Path to config file')
 
-    parser.add_argument('--dataset_names', default='dream5_1',
-        help='Comma delimited list of datasets from the config file to run')
+    parser.add_argument('--dataset_names', default=None,
+        help='Comma delimited list of datasets from the config file to run;\
+              if specified, runs subset of the datasets in the config file;\
+              if unspecified, run all datasets in the config file')
 
-    parser.add_argument('--algorithm_names', default='GENIE3',
+    parser.add_argument('--algorithm_names', default=None,
         help='Comma delimited list of algorithms from the config file to run; \
-              overrides the should_run parameter in the config file for the algorithms')
+              if specified, overrides the should_run parameter in the config file for those algorithms;\
+              if unspecified, follow the should_run parameter setting in the config file for all thee algorithms')
     
     return parser
 
@@ -80,3 +83,4 @@ def main():
 
 if __name__ == '__main__':
   main()
+

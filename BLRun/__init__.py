@@ -152,20 +152,33 @@ class ConfigParser(object):
         overlay_dir = input_settings_map['overlay_dir']
         algorithms_all = input_settings_map['algorithms']
         
-        datasets_select = cmd_args.dataset_names.split(',')
+        datasets_select = [] if cmd_args.dataset_names is None else cmd_args.dataset_names.split(',')
         datasets = []
         for dataset in datasets_all:
-            if (dataset['name'] in datasets_select):
-                datasets.append(dataset)
-        algorithms_select = cmd_args.algorithm_names.split(',')
+            # if subset was specified, add each 
+            # if subset was not specified, add all the datasets
+            if (len(datasets_select)>0):
+                if (dataset['name'] in datasets_select):
+                    datasets.append(dataset)
+            else:
+               datasets.append(dataset)
+        algorithms_select = [] if cmd_args.algorithm_names is None else cmd_args.algorithm_names.split(',')
         algorithm_list = []
         for algorithm in algorithms_all:
-            if (algorithm['name'] in algorithms_select):
-                algorithm['params']['should_run'] = [True]
-            else:
-                algorithm['params']['should_run'] = [False]
+            # if subset was specified, change each should_run to True and others to False
+            # if subset was not specified, just add the original algorithm seeting
+            if (len(algorithms_select)>0):
+                if (algorithm['name'] in algorithms_select):
+                    algorithm['params']['should_run'] = [True]
+                else:
+                    algorithm['params']['should_run'] = [False]
             algorithm_list.append(algorithm)
 
+        print(datasets_select)
+        print(algorithms_select)
+        print(len(dataset))
+        print(len(algorithm_list))
+            
         return InputSettings(
                 Path(input_dir, dataset_dir),
                 datasets,
