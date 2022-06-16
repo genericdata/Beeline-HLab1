@@ -33,11 +33,9 @@ def get_parser() -> argparse.ArgumentParser:
 
     parser.add_argument('-p','--pVal', type=float, default = 0.01,
                         help='p-value cutoff. Default = 0.01')
-
     
     parser.add_argument('-c','--BFcorr', action='store_true', default = False,
                         help='Perform Bonferroni correction. Default = False. \n')
-
     
     parser.add_argument('-n','--numGenes', type=int, default = 500,
                         help='Number of genes to add. Default=500. \n')
@@ -150,18 +148,20 @@ if num_genes > 0:
 
 print("\nSelected %d genes: %d variable genes and %d TFs" % (len(variable_genes),
                                                              len(variable_genes_new),
-                                                             len(variable_tfs))
+                                                             len(variable_tfs)))
 not_selected_genes = set(gene_df.index.values) - variable_genes
 if num_rand_genes > 0:
     if num_rand_genes > len(not_selected_genes):
-        rand_genes = not_selected_genes
+        rand_genes = set(not_selected_genes)
         pass
     else:
-        rand_genes = random.sample(not_selected_genes,num_rand_genes)
+        rand_genes = set(random.sample(not_selected_genes,num_rand_genes))
+else:
+    rand_genes = set()
 print("\nAdded %d random genes from %d non-selected genes " % (len(rand_genes),
                                                                len(not_selected_genes)))
 
-output_genes = set(variable_genes) | set(rand_genes)
+output_genes = variable_genes | rand_genes
 expr_df = expr_df.loc[output_genes]
 print("\nNew shape of Expression Data %d x %d" % (expr_df.shape[0],expr_df.shape[1]))
 
