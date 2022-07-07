@@ -29,7 +29,7 @@ from networkx.convert_matrix import from_pandas_adjacency
 
 # local imports
 from BLEval.parseTime import getTime
-from BLEval.computeDGAUC import PRROC
+from BLEval.computeDGAUC import PRROC,PRROC2,PRROC3,PRROC4
 from BLEval.computeBorda import Borda
 from BLEval.computeJaccard import Jaccard
 from BLEval.computeSpearman import Spearman
@@ -124,12 +124,124 @@ class BLEval(object):
             
             AUPRC, AUROC = PRROC(dataset, self.input_settings, 
                                     directed = directed, selfEdges = False, plotFlag = False)
+
             AUPRCDict[dataset['name']] = AUPRC
             AUROCDict[dataset['name']] = AUROC
+
         AUPRC = pd.DataFrame(AUPRCDict)
         AUROC = pd.DataFrame(AUROCDict)
+
         return AUPRC, AUROC
     
+    def computeAUC2(self, directed = True):
+
+        '''
+        Computes areas under the precision-recall (PR) and
+        and ROC plots for each algorithm-dataset combination.
+      
+        Parameters
+        ----------
+        directedFlag: bool
+            A flag to specifiy whether to treat predictions
+            as directed edges (directed = True) or 
+            undirected edges (directed = False).
+        
+        :returns:
+            - AUPRC: A dataframe containing AUPRC values for each algorithm-dataset combination
+            - AUROC: A dataframe containing AUROC values for each algorithm-dataset combination
+        '''
+        AUPRCDict2 = {}
+        AUROCDict2 = {}
+
+        for dataset in tqdm(self.input_settings.datasets, 
+                            total = len(self.input_settings.datasets), unit = " Datasets"):
+            
+            AUPRC2, AUROC2 = PRROC2(dataset, self.input_settings, 
+                                    directed = directed, selfEdges = False, plotFlag = False)
+
+            AUPRCDict2[dataset['name']] = AUPRC2
+            AUROCDict2[dataset['name']] = AUROC2
+
+        AUPRC2 = pd.DataFrame(AUPRCDict2)
+        AUROC2 = pd.DataFrame(AUROCDict2)
+
+        return AUPRC2, AUROC2
+
+
+    def computeAUC3(self, directed = True):
+
+        '''
+        Computes areas under the precision-recall (PR) and
+        and ROC plots for each algorithm-dataset combination.
+      
+        Parameters
+        ----------
+        directedFlag: bool
+            A flag to specifiy whether to treat predictions
+            as directed edges (directed = True) or 
+            undirected edges (directed = False).
+        
+        :returns:
+            - AUPRC: A dataframe containing AUPRC values for each algorithm-dataset combination
+            - AUROC: A dataframe containing AUROC values for each algorithm-dataset combination
+        '''
+        AUPRCDict3 = {}
+        AUROCDict3 = {}
+        AvePDict3 = {}
+
+        for dataset in tqdm(self.input_settings.datasets, 
+                            total = len(self.input_settings.datasets), unit = " Datasets"):
+            
+            AUPRC3, AUROC3, AveP3 = PRROC3(dataset, self.input_settings, 
+                                    directed = directed, selfEdges = False, plotFlag = False)
+
+            AUPRCDict3[dataset['name']] = AUPRC3
+            AUROCDict3[dataset['name']] = AUROC3
+            AvePDict3[dataset['name']] = AveP3
+
+        AUPRC3 = pd.DataFrame(AUPRCDict3)
+        AUROC3 = pd.DataFrame(AUROCDict3)
+        AveP3 = pd.DataFrame(AvePDict3)
+
+        return AUPRC3, AUROC3, AveP3
+
+    def computeAUC4(self, directed = True):
+
+        '''
+        Computes areas under the precision-recall (PR) and
+        and ROC plots for each algorithm-dataset combination.
+      
+        Parameters
+        ----------
+        directedFlag: bool
+            A flag to specifiy whether to treat predictions
+            as directed edges (directed = True) or 
+            undirected edges (directed = False).
+        
+        :returns:
+            - AUPRC: A dataframe containing AUPRC values for each algorithm-dataset combination
+            - AUROC: A dataframe containing AUROC values for each algorithm-dataset combination
+        '''
+        AUPRCDict4 = {}
+        AUROCDict4 = {}
+        AvePDict4 = {}
+
+        for dataset in tqdm(self.input_settings.datasets, 
+                            total = len(self.input_settings.datasets), unit = " Datasets"):
+            
+            AUPRC4, AUROC4, AveP4 = PRROC4(dataset, self.input_settings, 
+                                    directed = directed, selfEdges = False, plotFlag = False)
+
+            AUPRCDict4[dataset['name']] = AUPRC4
+            AUROCDict4[dataset['name']] = AUROC4
+            AvePDict4[dataset['name']] = AveP4
+
+        AUPRC4 = pd.DataFrame(AUPRCDict4)
+        AUROC4 = pd.DataFrame(AUROCDict4)
+        AveP4 = pd.DataFrame(AvePDict4)
+
+        return AUPRC4, AUROC4, AveP4
+
 
     def parseTime(self):
         """
@@ -338,7 +450,8 @@ class ConfigParser(object):
                 config_map['input_settings'],
                 cmd_args),
             ConfigParser.__parse_output_settings(
-                config_map['output_settings']))
+                config_map['output_settings'],
+                cmd_args))
     
     @staticmethod
     def __parse_input_settings(input_settings_map,cmd_args) -> InputSettings:
@@ -351,18 +464,26 @@ class ConfigParser(object):
         datasets_all = input_settings_map['datasets']
         algorithms_all = input_settings_map['algorithms']
 
-        datasets_select = cmd_args.dataset_names.split(',')
+        datasets_select = [] if cmd_args.dataset_names is None else cmd_args.dataset_names.split(',')
         datasets = []
         for dataset in datasets_all:
-            if (dataset['name'] in datasets_select):
-                datasets.append(dataset)
-        algorithms_select = cmd_args.algorithm_names.split(',')
+            # if subset was specified, add each 
+            # if subset was not specified, add all the datasets
+            if (len(datasets_select)>0):
+                if (dataset['name'] in datasets_select):
+                    datasets.append(dataset)
+            else:
+               datasets.append(dataset)
+        algorithms_select = [] if cmd_args.algorithm_names is None else cmd_args.algorithm_names.split(',')
         algorithm_list = []
         for algorithm in algorithms_all:
-            if (algorithm['name'] in algorithms_select):
-                algorithm['params']['should_run'] = [True]
-            else:
-                algorithm['params']['should_run'] = [False]
+            # if subset was specified, change each should_run to True and others to False
+            # if subset was not specified, just add the original algorithm seeting
+            if (len(algorithms_select)>0):
+                if (algorithm['name'] in algorithms_select):
+                    algorithm['params']['should_run'] = [True]
+                else:
+                    algorithm['params']['should_run'] = [False]
             algorithm_list.append(algorithm)
 
         return InputSettings(
@@ -400,13 +521,20 @@ class ConfigParser(object):
         return algorithms
 
     @staticmethod
-    def __parse_output_settings(output_settings_map) -> OutputSettings:
+    def __parse_output_settings(output_settings_map,cmd_args) -> OutputSettings:
         '''
         A method for parsing and initializing 
         Output object.
         '''
-        output_dir = Path(output_settings_map['output_dir'])
-        output_prefix = Path(output_settings_map['output_prefix'])
+        if (cmd_args.output_dir is None):
+            output_dir = Path(output_settings_map['output_dir'])
+        else:
+            output_dir = Path(cmd_args.output_dir)
+        
+        if (cmd_args.output_prefix is None):
+            output_prefix = Path(output_settings_map['output_prefix'])
+        else:
+            output_prefix = Path(cmd_args.output_prefix)
 
         return OutputSettings(output_dir,
                              output_prefix)
