@@ -42,13 +42,16 @@ def EarlyPrec(evalObject, algorithmName, TFEdges = False):
         trueEdgesDF.drop_duplicates(keep = 'first', inplace=True)
         trueEdgesDF.reset_index(drop=True, inplace=True)
 
-
-        outDir = str(evalObject.output_settings.base_dir) + \
+        #outDir = str(evalObject.output_settings.base_dir) + \
+        #         str(evalObject.input_settings.datadir).split("inputs")[1] + \
+        #         "/" + dataset["name"] + "/" + algorithmName
+        outDir = "outputs/" + \
                  str(evalObject.input_settings.datadir).split("inputs")[1] + \
                  "/" + dataset["name"] + "/" + algorithmName
 
         #algos = evalObject.input_settings.algorithms
         rank_path = outDir + "/rankedEdges.csv"
+        print(rank_path)
         if not os.path.isdir(outDir):
             rankDict[dataset["name"]] = set([])
             continue
