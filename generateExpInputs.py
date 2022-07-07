@@ -169,6 +169,7 @@ expr_df.to_csv(opts.outPrefix+'-ExpressionData.csv')
 
 if opts.netFile != 'None':
     netFile = opts.netFile
+    print("\nReading %s" % (netFile))
     netDF = pd.read_csv(netFile)
     netDF = netDF[(netDF.Gene1.isin(expr_df.index)) & (netDF.Gene2.isin(expr_df.index))]
     # Remove self-loops.
