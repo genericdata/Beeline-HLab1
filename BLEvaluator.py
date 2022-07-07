@@ -32,15 +32,40 @@ def get_parser() -> argparse.ArgumentParser:
         help="Configuration file containing list of datasets "
               "algorithms and output specifications.\n")
 
-    parser.add_argument('--dataset_names', default='dream5_1',
-        help='Comma delimited list of datasets from the config file to run')
+    parser.add_argument('--dataset_names', default=None,
+        help='Comma delimited list of datasets from the config file to run.')
 
-    parser.add_argument('--algorithm_names', default='GENIE3',
+    parser.add_argument('--algorithm_names', default=None,
         help='Comma delimited list of algorithms from the config file to run; \
-              overrides the should_run parameter in the config file for the algorithms')
+              overrides the should_run parameter in the config file for the algorithms.')
 
+    parser.add_argument('--output_prefix', default=None,
+        help='File name prefix for the evaluation output; \
+              overrides the output_prefix parameter in the config file.')
+
+    parser.add_argument('--output_dir', default=None,
+        help='Output directory prefix for the evaluation output; \
+              overrides the output_dir parameter in the config file.')
+    
     parser.add_argument('-a', '--auc', action="store_true", default=False,
-        help="Compute median of areas under Precision-Recall and ROC curves.\n")
+        help="Compute median of areas under Precision-Recall and ROC curves;\
+              possible edges are pairs of nodes in the ground truth network;\
+              original BEELINE implementation.\n")
+
+    parser.add_argument('--auc2', action="store_true", default=False,
+        help="Compute median of areas under Precision-Recall and ROC curves;\
+              possible edges are pairs of nodes in the ground truth network;\
+              optimized implementation with dictionary.\n")
+
+    parser.add_argument('--auc3', action="store_true", default=False,
+        help="Compute median of areas under Precision-Recall and ROC curves;\
+              possible edges are pairs of nodes in the ground truth network;\
+              new implemenation with numpy arrays.\n")
+
+    parser.add_argument('--auc4', action="store_true", default=False,
+        help="Compute median of areas under Precision-Recall and ROC curves;\
+              possible edges are pairs of nodes in the expression data;\
+              new implemenation with numpy arrays.\n")
     
     parser.add_argument('-j', '--jaccard', action="store_true", default=False,
       help="Compute median Jaccard index of predicted top-k networks "
@@ -89,23 +114,48 @@ def main():
     evalConfig = None
 
     with open(config_file, 'r') as conf:
-        evalConfig = ev.ConfigParser.parse(conf,opts)
-        
+        #evalConfig = ev.ConfigParser.parse(conf,opts)
+        evalSummarizer = ev.ConfigParser.parse(conf,opts)
+
     print('\nPost-run evaluation started...')
-    evalSummarizer = ev.BLEval(evalConfig.input_settings, evalConfig.output_settings)
+    #evalSummarizer = ev.BLEval(evalConfig.input_settings, evalConfig.output_settings)
+    print(evalSummarizer.input_settings.algorithms)
+    print(evalSummarizer.input_settings.datasets)
     
     outDir = str(evalSummarizer.output_settings.base_dir) + \
             str(evalSummarizer.input_settings.datadir).split("inputs")[1] + "/"+\
             str(evalSummarizer.output_settings.output_prefix) + "-"
     
-    # Compute and plot ROC, PRC and report median AUROC, AUPRC    
+    # Compute and plot ROC, PRC and report median AUROC, AUPRC
+    # possible edges are between nodes in the ground truth
     if (opts.auc):
         print('\n\nComputing areas under ROC and PR curves...')
 
         AUPRC, AUROC = evalSummarizer.computeAUC()
         AUPRC.to_csv(outDir+'AUPRC.csv')
         AUROC.to_csv(outDir+'AUROC.csv')
-    
+
+    # Compute and plot ROC, PRC and report median AUROC, AUPRC
+    # possible edges are between nodes in the ground truth
+    if (opts.auc2):
+        AUPRC2, AUROC2 = evalSummarizer.computeAUC2()
+        AUPRC2.to_csv(outDir+'AUPRC2.csv')
+        AUROC2.to_csv(outDir+'AUROC2.csv')
+
+    # Compute and plot ROC, PRC and report median AUROC, AUPRC
+    # possible edges are between nodes in the ground truth
+    if (opts.auc3):
+        AUPRC3, AUROC3, AveP3 = evalSummarizer.computeAUC3()
+        AUPRC3.to_csv(outDir+'AUPRC3.csv')
+        AUROC3.to_csv(outDir+'AUROC3.csv')
+        AveP3.to_csv(outDir+'AveP3.csv')
+
+    if (opts.auc4):
+        AUPRC4, AUROC4, AveP4 = evalSummarizer.computeAUC4()
+        AUPRC4.to_csv(outDir+'AUPRC4.csv')
+        AUROC4.to_csv(outDir+'AUROC4.csv')
+        AveP4.to_csv(outDir+'AveP4.csv')
+        
     # Compute Jaccard index    
     if (opts.jaccard):
         print('\n\nComputing Jaccard index...')
