@@ -67,6 +67,11 @@ def get_parser() -> argparse.ArgumentParser:
               possible edges are pairs of nodes in the expression data;\
               new implemenation with numpy arrays.\n")
     
+    parser.add_argument('--pauc4', action="store_true", default=False,
+        help="Compute partial areas under Precision-Recall and ROC curves;\
+              possible edges are pairs of nodes in the expression data;\
+              new implemenation with numpy arrays.\n")
+    
     parser.add_argument('-j', '--jaccard', action="store_true", default=False,
       help="Compute median Jaccard index of predicted top-k networks "
       "for each algorithm for a given set of datasets generated "
@@ -155,6 +160,11 @@ def main():
         AUPRC4.to_csv(outDir+'AUPRC4.csv')
         AUROC4.to_csv(outDir+'AUROC4.csv')
         AveP4.to_csv(outDir+'AveP4.csv')
+
+    if (opts.pauc4):
+        PAUC4 = evalSummarizer.computePAUC4()
+        for metric_name,metric_df in PAUC4.items():
+            metric_df.to_csv(outDir+metric_name+'4.csv')
         
     # Compute Jaccard index    
     if (opts.jaccard):

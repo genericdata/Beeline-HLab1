@@ -30,6 +30,7 @@ from networkx.convert_matrix import from_pandas_adjacency
 # local imports
 from BLEval.parseTime import getTime
 from BLEval.computeDGAUC import PRROC,PRROC2,PRROC3,PRROC4
+from BLEval.computeDGpAUC import pPRROC3,pPRROC4
 from BLEval.computeBorda import Borda
 from BLEval.computeJaccard import Jaccard
 from BLEval.computeSpearman import Spearman
@@ -242,6 +243,39 @@ class BLEval(object):
 
         return AUPRC4, AUROC4, AveP4
 
+
+    def computePAUC4(self, directed = True):
+
+        '''
+        Computes areas under the precision-recall (PR) and
+        and ROC plots for each algorithm-dataset combination.
+      
+        Parameters
+        ----------
+        directedFlag: bool
+            A flag to specifiy whether to treat predictions
+            as directed edges (directed = True) or 
+            undirected edges (directed = False).
+        
+        :returns:
+            - AUPRC: A dataframe containing AUPRC values for each algorithm-dataset combination
+            - AUROC: A dataframe containing AUROC values for each algorithm-dataset combination
+        '''
+        pAUCDict4 = defaultdict(lambda: defaultdict(dict)) # auc name->dataset name->algorithm->value
+
+        for dataset in tqdm(self.input_settings.datasets, 
+                            total = len(self.input_settings.datasets), unit = " Datasets"):
+
+            # algorithm -> pAUC name -> value
+            pAUC4 = pPRROC4(dataset, self.input_settings, 
+                           directed = directed, selfEdges = False, plotFlag = False)
+
+            for algo,metric_dict in pAUC4.items():
+                for metric_name,metric_value in metric_dict.items():
+                    pAUCDict4[metric_name][dataset['name']][algo] = metric_value
+
+        pAUCDF4 = dict((metric_name,pd.DataFrame(dataset_dict)) for metric_name,dataset_dict in pAUCDict4.items())
+        return pAUCDF4
 
     def parseTime(self):
         """
