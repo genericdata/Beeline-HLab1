@@ -9,20 +9,21 @@ import yaml
 
 BEELINE_NETWORKS_DIR='/scratch/ch153/packages/BEELINE/BEELINE-Networks'
 BEELINE_DATA_DIR='/scratch/ch153/packages/BEELINE/BEELINE-data'
+SERGIO_DATASETS_DIR='/scratch/ch153/packages/SERGIO/PayamDiba/SERGIO/data_sets'
 
 ##########################
 ### Datasets
 ##########################
 ### BEELINE real datasets
-DATASETS = ['hESC','hHEP','mDC','mESC','mHSC-E']
-DATASETS_NS = ['hESC','hHEP','mDC','mESC','mHSC-E']
+#DATASETS = ['hESC','hHEP','mDC','mESC','mHSC-E']
+#DATASETS_NS = ['hESC','hHEP','mDC','mESC','mHSC-E']
+#DATASET_DIRS = ['L0','L1','L2']
+#DATASET_DIRS_NS = ['L0_ns','L1_ns','L2_ns']
+#DATASET_DIRS_LOFGOF = ['L0_lofgof','L1_lofgof','L2_lofgof']
 
 ALGORITHMS = ['GENIE3','GRISLI','GRNBOOST2','GRNVBEM',
-               'LEAP','PIDC','PPCOR','SCNS','SCODE','SCRIBE',
+               'LEAP','PIDC','PPCOR','RANDOM','SCNS','SCODE','SCRIBE',
                'SINCERITIES','SINGE']
-DATASET_DIRS = ['L0','L1','L2']
-DATASET_DIRS_NS = ['L0_ns','L1_ns','L2_ns']
-DATASET_DIRS_LOFGOF = ['L0_lofgof','L1_lofgof','L2_lofgof']
 
 # for each ground-truth network
 DATASET_PARAMS = {'cs':{'dataset':['hESC','hHep','mDC','mESC','mHSC-E'],
@@ -60,7 +61,7 @@ for level_name,level_settings in EXP_LEVELS.items():
         dataset_df['num_rand_genes'] = level_settings['num_rand_genes']
         exp_param_list.append(dataset_df)
 EXP_PARAM_DF = pd.concat(exp_param_list)
-print(EXP_PARAM_DF)
+#print(EXP_PARAM_DF)
 
 def get_exp_file(exp_param_df,exp_dir,dataset,upath):
     ds_df = exp_param_df[(exp_param_df.exp_dir==exp_dir) & (exp_param_df.dataset==dataset)].iloc[[0]]
@@ -103,14 +104,13 @@ rule beeline_exp_inputs:
     rm -f {params.D}/PseudoTime.csv; ln -rs {output.ptout} {params.D}/PseudoTime.csv
     """
 rule beeline_exp_inputs_out:
-   input: expand('inputs_beeline/{ds.exp_dir}/{ds.dataset}/{ds.exp_dir}-ExpressionData.csv',\
+   input: expand('inputs_beeline2/{ds.exp_dir}/{ds.dataset}/{ds.exp_dir}-ExpressionData.csv',\
                  ds=EXP_PARAM_DF.itertuples())
 
 ### SERGIO data from github
 ### DS1, DS2, DS3 are steady state
 ### DS4, DS5, DS6, DS7 are differentiation datasets
 ###      formatted by notebooks/ipynb/format_sergio_2022-07-05.ipynb
-SERGIO_DATASETS_DIR='/scratch/ch153/packages/SERGIO/PayamDiba/SERGIO/data_sets'
 SERGIO_DATASET_PARAMS = {
     'exp_name':['DS1','DS2','DS3'],
     'exp_dir':['SERGIO_DS1','SERGIO_DS2','SERGIO_DS3'],
@@ -158,7 +158,7 @@ rule beeline_sergio_dsdata:# data common for all simulated files in each dataset
         pt.to_csv(output.ptout,sep=',',columns=['PseudoTime','Time'],header=True,index_label='Cell ID')
         
 rule beeline_sergio_dsdata_out:
-   input: expand('inputs_beeline/SERGIO_{ds.exp_name}/refNetwork.csv',\
+   input: expand('inputs_beeline2/SERGIO_{ds.exp_name}/refNetwork.csv',\
                  ds=SERGIO_PARAMS_DF.itertuples())
 
 rule beeline_sergio_bulk_dsdata:# data common for alal simulated files in each dataset
@@ -169,7 +169,7 @@ rule beeline_sergio_bulk_dsdata:# data common for alal simulated files in each d
         cp {input.netfile} {output.netout}
     """
 rule beeline_sergio_bulk_dsdata_out:
-   input: expand('inputs_beeline/SERGIO_{ds.exp_name}_bulk/refNetwork.csv',\
+   input: expand('inputs_beeline2/SERGIO_{ds.exp_name}_bulk/refNetwork.csv',\
                  ds=SERGIO_PARAMS_DF.itertuples())
 
 rule beeline_sergio_inputs:
@@ -210,7 +210,7 @@ rule beeline_sergio_inputs:
         pt_out.to_csv(output.ptout,na_rep='NA')
             
 rule beeline_sergio_inputs_out:
-   input: expand('inputs_beeline/SERGIO_{ds.exp_name}/net{network_i}/ExpressionData.csv',\
+   input: expand('inputs_beeline2/SERGIO_{ds.exp_name}/net{network_i}/ExpressionData.csv',\
                  ds=SERGIO_PARAMS_DF.itertuples(),network_i=range(1))
 
 rule beeline_sergio_bulk_inputs:
@@ -226,7 +226,7 @@ rule beeline_sergio_bulk_inputs:
         grn.to_csv(output.expout_tsv,sep='\t', index = None)
         
 rule beeline_sergio_bulk_inputs_out:
-   input: expand('inputs_beeline/SERGIO_{ds.exp_name}_bulk/net{network_i}/simulated_noNoise_bulk_{network_i}.tsv',\
+   input: expand('inputs_beeline2/SERGIO_{ds.exp_name}_bulk/net{network_i}/simulated_noNoise_bulk_{network_i}.tsv',\
                  ds=SERGIO_PARAMS_DF.itertuples(),network_i=range(15))
 
 rule beeline_sergio_netdata_inputs:
@@ -237,40 +237,58 @@ rule beeline_sergio_netdata_inputs:
         cp {input.netfile} {output.netout}
     """
 rule beeline_sergio_netdata_inputs_out:
-   input: expand('inputs_beeline/SERGIO_{ds.exp_name}/net{network_i}/refNetwork.tsv',\
+   input: expand('inputs_beeline2/SERGIO_{ds.exp_name}/net{network_i}/refNetwork.tsv',\
                  ds=SERGIO_PARAMS_DF.itertuples(),network_i=range(15)) +\
-          expand('inputs_beeline/SERGIO_{ds.exp_name}_bulk/net{network_i}/refNetwork.tsv',\
+          expand('inputs_beeline2/SERGIO_{ds.exp_name}_bulk/net{network_i}/refNetwork.tsv',\
                  ds=SERGIO_PARAMS_DF.itertuples(),network_i=range(15))
    
-   
+##########################
+### BEELINE run 
+##########################
 def get_run_mem_mb(wildcards):
     switcher = {
-        "L0": 64000,
-        "L1": 32000,
-        "L2": 64000,
-        "L0_ns": 64000,
-        "L1_ns": 64000,
-        "L2_ns": 64000        
+        "L0": 120000,
+        "L1": 120000,
+        "L2": 120000,
+        "L0_ns": 120000,
+        "L1_ns": 120000,
+        "L2_ns": 120000,
+        "L0_lofgof": 120000,
+        "L1_lofgof": 120000,
+        "L2_lofgof": 120000,
+        "SERGIO_DS4":32000,        
+        "SERGIO_DS5":32000,
+        "SERGIO_DS6":32000,
+        "SERGIO_DS7":32000
         }
-    return switcher.get(wildcards.dataset_dir, 8000)
+    return switcher.get(wildcards.exp_dir, 8000)
 
 def get_run_time(wildcards):
     switcher = {
-        "L0": "08:00:00",
-        "L1": "08:00:00",
-        "L2": "08:00:00",
-        "L0_ns": "08:00:00",
-        "L1_ns": "08:00:00",
-        "L2_ns": "08:00:00"
+        "L0": "20:00:00",
+        "L1": "20:00:00",
+        "L2": "20:00:00",
+        "L0_ns": "20:00:00",
+        "L1_ns": "20:00:00",
+        "L2_ns": "20:00:00",
+        "L0_lofgof": "20:00:00",
+        "L1_lofgof": "20:00:00",
+        "L2_lofgof": "20:00:00",
+        "SERGIO_DS4": "12:00:00",
+        "SERGIO_DS5": "12:00:00",
+        "SERGIO_DS6": "12:00:00",
+        "SERGIO_DS7": "12:00:00"
         }
-    return switcher.get(wildcards.dataset_dir, "03:00:00")
+    return switcher.get(wildcards.exp_dir, "03:00:00")
+
+# split config
+#parallel --dry-run "python generateSplitConfigs.py --config config-files/config_{}.yaml --config_split_dir config-files-split/config_{}_split" ::: L0 L0_ns L0_lofgof L1 L1_ns L1_lofgof L2 L2_ns L2_lofgof
 
 rule beeline_run:
-    input: 'config-files-split/config_{dataset_dir}_split/{dataset}/{algorithm}/config.yaml'
-    output: 'outputs/{dataset_dir}/{dataset}/{algorithm}/rankedEdges.log'
-#    log: 'outputs/{dataset_dir}/{dataset}/{algorithm}/rankedEdges.log'
-    params: D="outputs/{dataset_dir}/{dataset}/{algorithm}",\
-            jobname="blr_{dataset_dir}-{dataset}-{algorithm}",\
+    input: 'config-files-split/config_{exp_dir}_split/{dataset}/{algorithm}/config.yaml'
+    output: 'outputs/{exp_dir}/{dataset}/{algorithm}/rankedEdges.log'
+    params: D="outputs/{exp_dir}/{dataset}/{algorithm}",\
+            jobname="blr_{exp_dir}-{dataset}-{algorithm}",\
             clog_prefix="rankedEdges"
     threads: 1
     resources: mem_mb=get_run_mem_mb, time=get_run_time,
@@ -280,41 +298,54 @@ rule beeline_run:
         python BLRunner.py --config {input} > {output} 2>&1 || true
     """
 rule beeline_run_out:
-   input: expand('outputs/{dataset_dir}/{dataset}/{algorithm}/rankedEdges.log',\
-                 dataset_dir=['L2'],\
-                 dataset=DATASETS,\
+   input: expand('outputs/{exp_dir}/{dataset}/{algorithm}/rankedEdges.log',\
+                 exp_dir=['L0','L2'],\
+                 dataset=DATASET_PARAMS['cs']['dataset'],\
                  algorithm=ALGORITHMS)
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_run_out
 rule beeline_run_ns_out:
-   input: expand('outputs/{dataset_dir}/{dataset}/{algorithm}/rankedEdges.log',\
-                 dataset_dir=['L2_ns'],\
-                 dataset=DATASETS_NS,\
+   input: expand('outputs/{exp_dir}/{dataset}/{algorithm}/rankedEdges.log',\
+                 exp_dir=['L0_ns','L1_ns','L2_ns'],\
+                 dataset=DATASET_PARAMS['ns']['dataset'],\
                  algorithm=ALGORITHMS)
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_run_ns_out
+rule beeline_run_lofgof_out:
+   input: expand('outputs/{exp_dir}/{dataset}/{algorithm}/rankedEdges.log',\
+                 exp_dir=['L0_lofgof','L1_lofgof','L2_lofgof'],\
+                 dataset=DATASET_PARAMS['lofgof']['dataset'],\
+                 algorithm=ALGORITHMS)
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_run_lofgof_out
+rule beeline_run_sergio_out:
+   input: expand('outputs/{exp_dir}/{dataset}/{algorithm}/rankedEdges.log',\
+                 exp_dir=['SERGIO_DS4','SERGIO_DS5','SERGIO_DS6','SERGIO_DS7'],\
+                 dataset=['net0'],\
+                 algorithm=ALGORITHMS)
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_run_sergio_out
 
 def get_eval_mem_mb(wildcards):
     switcher = {
         "epr": 16000,
         "auc3": 200000,
+        "pauc4": 16000,
         "auc4": 16000
         }
     return switcher.get(wildcards.metric, 8000)
 
 rule beeline_eval:
-    input: 'config-files-split/config_{dataset_dir}_split/{dataset}/{algorithm}/config.yaml'
-    output: 'outputs_eval/{dataset_dir}/{dataset}/{algorithm}/{dataset_dir}-{metric}.out'
-    log: 'outputs_eval/{dataset_dir}/{dataset}/{algorithm}/{dataset_dir}-{metric}.log'
+    input: 'config-files-split/config_{exp_dir}_split/{dataset}/{algorithm}/config.yaml'
+    output: 'outputs_eval/{exp_dir}/{dataset}/{algorithm}/{exp_dir}-{metric}.out'
+    log: 'outputs_eval/{exp_dir}/{dataset}/{algorithm}/{exp_dir}-{metric}.log'
     params: overlay="conda_greene/overlay-5GB-200K-beeline20211104.ext3",\
             sif="conda_greene/centos-8.2.2004.sif",\
-            D="outputs_eval/{dataset_dir}/{dataset}/{algorithm}",\
+            D="outputs_eval/{exp_dir}/{dataset}/{algorithm}",\
             output_dir="outputs_eval",\
-            output_prefix="{dataset}/{algorithm}/{dataset_dir}",\
-            jobname="ble_{dataset_dir}-{dataset}-{algorithm}",\
-            clog_prefix="{dataset_dir}-{metric}"
+            output_prefix="{dataset}/{algorithm}/{exp_dir}",\
+            jobname="ble_{exp_dir}-{dataset}-{algorithm}",\
+            clog_prefix="{exp_dir}-{metric}"
     threads: 1
     resources: mem_mb=get_eval_mem_mb, time="00:10:00",
     shell: """
-    mkdir -p {params.D}; find {params.D} -type f ! -name {params.clog_prefix}.slurm-out -delete
+    mkdir -p {params.D}
     singularity exec \
     --overlay {params.overlay}:ro \
     {params.sif} \
@@ -322,18 +353,37 @@ rule beeline_eval:
     python BLEvaluator.py --config {input} --{wildcards.metric} --output_dir {params.output_dir} --output_prefix {params.output_prefix} > {log} 2>&1 \" 
     touch {output}
     """
-rule beeline_eval_l0_out:
-   input: expand('outputs_eval/{dataset_dir}/{dataset}/{algorithm}/{dataset_dir}-{metric}.out',\
-                 dataset_dir=['L0'],\
-                 dataset=DATASETS,\
+#; find {params.D} -type f ! -name {params.clog_prefix}.slurm-out -delete    
+rule beeline_eval_out:
+   input: expand('outputs_eval/{exp_dir}/{dataset}/{algorithm}/{exp_dir}-{metric}.out',\
+                 exp_dir=['L0','L1','L2'],\
+                 dataset=DATASET_PARAMS['cs']['dataset'],\
                  algorithm=ALGORITHMS,\
-                 metric=['epr','auc4'])
-#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_eval_l0_out
+                 metric=['epr','auc4','pauc4'])
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_eval_out
 rule beeline_eval_ns_out:
-   input: expand('outputs/{dataset_dir}/{dataset}/{algorithm}/{dataset_dir}-{metric}.log',\
-                 dataset_dir=DATASET_DIRS_NS,\
-                 dataset=DATASETS_NS,\
+   input: expand('outputs_eval/{exp_dir}/{dataset}/{algorithm}/{exp_dir}-{metric}.out',\
+                 exp_dir=['L0_ns','L1_ns','L2_ns'],\
+                 dataset=DATASET_PARAMS['ns']['dataset'],\
                  algorithm=ALGORITHMS,\
-                 metric=['epr','auc4']) 
+                 metric=['epr','auc4','pauc4'])
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_eval_ns_out
-
+rule beeline_eval_ns_out2:
+   shell: "echo {rules.beeline_eval_ns_out.input}"
+rule beeline_eval_lofgof_out:
+   input: expand('outputs_eval/{exp_dir}/{dataset}/{algorithm}/{exp_dir}-{metric}.out',\
+                 exp_dir=['L0_lofgof','L1_lofgof','L2_lofgof'],\
+                 dataset=DATASET_PARAMS['lofgof']['dataset'],\
+                 algorithm=ALGORITHMS,\
+                 metric=['epr','auc4','pauc4'])
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_eval_lofgof_out
+rule beeline_eval_sergio_out:
+   input: expand('outputs_eval/{exp_dir}/{dataset}/{algorithm}/{exp_dir}-{metric}.out',\
+                 exp_dir=['SERGIO_DS4','SERGIO_DS5','SERGIO_DS6','SERGIO_DS7'],\
+                 dataset=['net0'],\
+                 algorithm=ALGORITHMS,\
+                 metric=['epr','auc4','pauc4']) 
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_eval_sergio_out
+rule beeline_eval_sergio_out2:
+   shell: "echo {rules.beeline_eval_sergio_out.input}"
+   
