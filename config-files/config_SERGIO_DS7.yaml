@@ -36,6 +36,8 @@ input_settings:
     #   params: any additional, algorithm-specific parameters
     #       should be specified in the params map for a given algorithm
     #
+
+
     algorithms:
 
         - name: "CICT"
@@ -48,12 +50,11 @@ input_settings:
               supervised.gtProp: [.2] #proportion of GT used for classification
               supervised.train: [.3] #proportion of classification records used for training
               fp.fn.cost: [1/5]  #False positive to False Negative cost ratio for threshold identification
-              
-              
+
+
         - name: "PIDC"
           params: 
               should_run: [True]
-
 
 
         - name: "GRNVBEM"
@@ -78,10 +79,12 @@ input_settings:
               # p-value cutoff
               # Used in parsing output
               pVal: [0.01]
-              
+
+
         - name: "RANDOM"
           params: 
               should_run: [True] #<===
+
 
         - name: "SCODE"
           params:
@@ -90,6 +93,7 @@ input_settings:
               z: [10]
               nIter: [1000]
               nRep: [6]
+
 
         - name: "SCNS"
           params: 
@@ -100,16 +104,16 @@ input_settings:
           params: 
               should_run: [True]  #<====Error
               nBins: [10]
-              
-              
+
+
         - name: "LEAP"
           params: 
               should_run: [True]
               #should_run: [False]
               # Default maxLag value is 0.33
               maxLag: [0.33]
-             
-              
+
+
         - name: "GRISLI"
           params: 
               should_run: [True]
