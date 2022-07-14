@@ -25,48 +25,30 @@ input_settings:
     
     datasets:
 
-#        - name: "dream5_1"
-#          exprData: "ExpressionData.csv"
-#          cellData: "PseudoTime.csv"
-#          trueEdges: "refNetwork.csv"
+        - name: "hESC"
+          exprData: "ExpressionData.csv"
+          cellData: "PseudoTime.csv"
+          trueEdges: "refNetwork.csv"
 
-#        - name: "dream5_3"
-#          exprData: "ExpressionData.csv"
-#          cellData: "PseudoTime.csv"
-#          trueEdges: "refNetwork.csv"
+        - name: "hHep"
+          exprData: "ExpressionData.csv"
+          cellData: "PseudoTime.csv"
+          trueEdges: "refNetwork.csv"
           
- #       - name: "dream5_4"
- #         exprData: "ExpressionData.csv"
- #         cellData: "PseudoTime.csv"
- #         trueEdges: "refNetwork.csv"
-          
- #       - name: "hESC"
- #         exprData: "ExpressionData.csv"
- #         cellData: "PseudoTime.csv"
- #         trueEdges: "refNetwork.csv"
-
- #       - name: "hHEP"
- #         exprData: "ExpressionData.csv"
- #         cellData: "PseudoTime.csv"
- #         trueEdges: "refNetwork.csv"
-          
- #       - name: "mESC"
- #         exprData: "ExpressionData.csv"
- #         cellData: "PseudoTime.csv"
- #         trueEdges: "refNetwork.csv"
+        - name: "mESC"
+          exprData: "ExpressionData.csv"
+          cellData: "PseudoTime.csv"
+          trueEdges: "refNetwork.csv"
           
         - name: "mDC"
           exprData: "ExpressionData.csv"
           cellData: "PseudoTime.csv"
           trueEdges: "refNetwork.csv"
           
- #       - name: "mHSC-E"
- #         exprData: "ExpressionData.csv"
- #         cellData: "PseudoTime.csv"
- #         trueEdges: "refNetwork.csv"
-          
-          
-
+        - name: "mHSC-E"
+          exprData: "ExpressionData.csv"
+          cellData: "PseudoTime.csv"
+          trueEdges: "refNetwork.csv"
           
  
     # Denotes a list of algorithms to run. Each has the following parameters:
@@ -78,41 +60,37 @@ input_settings:
     #   params: any additional, algorithm-specific parameters
     #       should be specified in the params map for a given algorithm
     #
-    
-    
-     
-    
+
+
     algorithms:
 
         - name: "CICT"
           params: 
-              should_run: [False]
-              groundTruth: ['refNetwork.tsv']
+              should_run: [True]
+              groundTruth: ['refNetwork.csv']
               edgeTypes: ['ewMImm,ewMIempirical, Pearson,Euclidean,Granger']  #  ewMImm,ewMIempirical, efMIshrink,ewMIshrink , efMImm,efMIempirical, Pearson,Kendall,Spearman, Euclidean,Granger,L10NormManhattan,
               supervised.positiveClass: ['c,rc']  # c:causal edges, 'c,rc': causal and reversecausal
               supervised.negativeClass: ['r']  # r:random edges, 'rc': reversecausal
               supervised.gtProp: [.2] #proportion of GT used for classification
               supervised.train: [.3] #proportion of classification records used for training
               fp.fn.cost: [1/5]  #False positive to False Negative cost ratio for threshold identification
-              
-              
+
+
         - name: "PIDC"
           params: 
-              should_run: [False]
+              should_run: [True]
 
 
         - name: "GRNVBEM"
           params: 
-              should_run: [False]  #should_run: [True]
+              should_run: [True]
 
-              
 
         - name: "GENIE3"
           params: 
               should_run: [True]  #<===
-              
-              
-              
+
+
         - name: "GRNBOOST2"
           params: 
               should_run: [True] #<===
@@ -125,38 +103,44 @@ input_settings:
               # p-value cutoff
               # Used in parsing output
               pVal: [0.01]
-              
-               
+
+
+        - name: "RANDOM"
+          params: 
+              should_run: [True] #<===
+
+
         - name: "SCODE"
           params:
-              should_run: [False]  #<==== Error
+              should_run: [True]  #<==== Error
                   #should_run: [False]
               z: [10]
               nIter: [1000]
               nRep: [6]
 
+
         - name: "SCNS"
           params: 
-              should_run: [False]#<====Error
+              should_run: [True] #<=== error
               
               
         - name: "SINCERITIES"
           params: 
-              should_run: [False]  #<====Error
+              should_run: [True]  #<====Error
               nBins: [10]
-              
-              
+
+
         - name: "LEAP"
           params: 
-              should_run: [False]
+              should_run: [True]
               #should_run: [False]
               # Default maxLag value is 0.33
               maxLag: [0.33]
-             
-              
+
+
         - name: "GRISLI"
           params: 
-              should_run: [False]
+              should_run: [True]
               L: [10]
               R: [3000]
               alphaMin: [0.0]
@@ -164,7 +148,7 @@ input_settings:
 
         - name: "SINGE"
           params: 
-              should_run: [False]
+              should_run: [True]
               lambda: [0.01]
               dT: [15]
               num_lags: [5]
@@ -177,7 +161,7 @@ input_settings:
 
         - name: "SCRIBE"
           params: 
-              should_run: [False]
+              should_run: [True]
               ### required parameters
               # a list of delay values
               delay: ["5"]

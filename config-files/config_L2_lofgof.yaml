@@ -39,10 +39,8 @@ input_settings:
     #   params: any additional, algorithm-specific parameters
     #       should be specified in the params map for a given algorithm
     #
-    
-    
-     
-    
+
+
     algorithms:
 
         - name: "CICT"
@@ -64,16 +62,14 @@ input_settings:
 
         - name: "GRNVBEM"
           params: 
-              should_run: [True]  #should_run: [True]
+              should_run: [True]
 
               
-
         - name: "GENIE3"
           params: 
               should_run: [True]  #<===
-              
-              
-              
+
+
         - name: "GRNBOOST2"
           params: 
               should_run: [True] #<===
@@ -86,15 +82,21 @@ input_settings:
               # p-value cutoff
               # Used in parsing output
               pVal: [0.01]
-              
-               
+
+
+        - name: "RANDOM"
+          params: 
+              should_run: [True] #<===
+
+
         - name: "SCODE"
           params:
-              should_run: True]  #<==== Error
+              should_run: [True]  #<==== Error
                   #should_run: [False]
               z: [10]
               nIter: [1000]
               nRep: [6]
+
 
         - name: "SCNS"
           params: 
@@ -113,8 +115,7 @@ input_settings:
               #should_run: [False]
               # Default maxLag value is 0.33
               maxLag: [0.33]
-             
-              
+
         - name: "GRISLI"
           params: 
               should_run: [True]

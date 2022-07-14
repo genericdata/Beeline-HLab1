@@ -10,7 +10,7 @@ input_settings:
     input_dir : "inputs"
 
     # Subdirectory of inputs that datasets are placed in
-    dataset_dir: "SERGIO_DS4"
+    dataset_dir: "SERGIO_DS1"
 
     # Denotes a list of datasets, each with the following parameters:
     #   name: Name of the dataset. May be used in logging or other
@@ -24,10 +24,82 @@ input_settings:
     #              edge list format. Needed for evaluation.
     datasets:
         - name: "net0"
-          exprData: "ExpressionData.csv"  
-          cellData: "SlingshotPT.csv"
-          trueEdges: "refNetwork.csv"
+          exprData: "simulated_noNoise_0.tsv"  
+          #cellData: "PseudoTime.csv"
+          trueEdges: "gt_GRN.tsv"
+          
+        - name: "net1"
+          exprData: "simulated_noNoise_1.tsv"  
+          #cellData: "PseudoTime.csv"
+          trueEdges: "gt_GRN.tsv"
 
+        - name: "net2"
+          exprData: "simulated_noNoise_2.tsv"  
+          #cellData: "PseudoTime.csv"
+          trueEdges: "gt_GRN.tsv"
+
+        - name: "net3"
+          exprData: "simulated_noNoise_3.tsv"  
+          #cellData: "PseudoTime.csv"
+          trueEdges: "gt_GRN.tsv"
+          
+        - name: "net4"
+          exprData: "simulated_noNoise_4.tsv"  
+          #cellData: "PseudoTime.csv"
+          trueEdges: "gt_GRN.tsv"
+          
+        - name: "net5"
+          exprData: "simulated_noNoise_5.tsv"  
+          #cellData: "PseudoTime.csv"
+          trueEdges: "gt_GRN.tsv"
+
+        - name: "net6"
+          exprData: "simulated_noNoise_6.tsv"  
+          #cellData: "PseudoTime.csv"
+          trueEdges: "gt_GRN.tsv"
+
+        - name: "net7"
+          exprData: "simulated_noNoise_7.tsv"  
+          #cellData: "PseudoTime.csv"
+          trueEdges: "gt_GRN.tsv"
+
+        - name: "net8"
+          exprData: "simulated_noNoise_8.tsv"  
+          #cellData: "PseudoTime.csv"
+          trueEdges: "gt_GRN.tsv"
+          
+        - name: "net9"
+          exprData: "simulated_noNoise_9.tsv"  
+          #cellData: "PseudoTime.csv"
+          trueEdges: "gt_GRN.tsv"
+
+        - name: "net10"
+          exprData: "simulated_noNoise_10.tsv"  
+          #cellData: "PseudoTime.csv"
+          trueEdges: "gt_GRN.tsv"
+
+        - name: "net11"
+          exprData: "simulated_noNoise_11.tsv"  
+          #cellData: "PseudoTime.csv"
+          trueEdges: "gt_GRN.tsv"
+          
+        - name: "net12"
+          exprData: "simulated_noNoise_12.tsv"  
+          #cellData: "PseudoTime.csv"
+          trueEdges: "gt_GRN.tsv"
+
+        - name: "net13"
+          exprData: "simulated_noNoise_13.tsv"  
+          #cellData: "PseudoTime.csv"
+          trueEdges: "gt_GRN.tsv"
+
+        - name: "net14"
+          exprData: "simulated_noNoise_14.tsv"  
+          #cellData: "PseudoTime.csv"
+          trueEdges: "gt_GRN.tsv"
+
+
+    # Denotes a list of algorithms to run. Each has the following parameters:
     #   name: Name of the algorithm. Must be recognized by the pipeline, see
     #       code for acceptable values
     #
@@ -36,8 +108,6 @@ input_settings:
     #   params: any additional, algorithm-specific parameters
     #       should be specified in the params map for a given algorithm
     #
-
-
     algorithms:
 
         - name: "CICT"
@@ -50,8 +120,8 @@ input_settings:
               supervised.gtProp: [.2] #proportion of GT used for classification
               supervised.train: [.3] #proportion of classification records used for training
               fp.fn.cost: [1/5]  #False positive to False Negative cost ratio for threshold identification
-
-
+              
+              
         - name: "PIDC"
           params: 
               should_run: [True]
@@ -61,12 +131,14 @@ input_settings:
           params: 
               should_run: [True]
 
+              
 
         - name: "GENIE3"
           params: 
               should_run: [True]  #<===
-
-
+              
+              
+              
         - name: "GRNBOOST2"
           params: 
               should_run: [True] #<===
@@ -79,12 +151,10 @@ input_settings:
               # p-value cutoff
               # Used in parsing output
               pVal: [0.01]
-
-
+              
         - name: "RANDOM"
           params: 
               should_run: [True] #<===
-
 
         - name: "SCODE"
           params:
@@ -93,7 +163,6 @@ input_settings:
               z: [10]
               nIter: [1000]
               nRep: [6]
-
 
         - name: "SCNS"
           params: 
@@ -104,16 +173,16 @@ input_settings:
           params: 
               should_run: [True]  #<====Error
               nBins: [10]
-
-
+              
+              
         - name: "LEAP"
           params: 
               should_run: [True]
               #should_run: [False]
               # Default maxLag value is 0.33
               maxLag: [0.33]
-
-
+             
+              
         - name: "GRISLI"
           params: 
               should_run: [True]
@@ -163,4 +232,4 @@ output_settings:
 
     # Base output directory
     output_dir: "outputs"
-    output_prefix: "SERGIO_DS4"
+    output_prefix: "SERGIO_DS1"
