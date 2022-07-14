@@ -11,9 +11,10 @@ src/.*
 .idea/
 .snakemake/
 *~
-conda_greene/*.sif
 conda_greene/*.ext3
 conda_greene/*.ext3.gz
+conda_greene/*.sif
+conda_greene/*.tar
 config-files-split/
 config-files_*/
 images_singularity/
