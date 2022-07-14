@@ -1,3 +1,4 @@
+abbas_results_*/
 inputs/
 inputs
 inputs_*/
@@ -10,7 +11,9 @@ src/.*
 .idea/
 .snakemake/
 *~
-conda_greene/
+conda_greene/*.sif
+conda_greene/*.ext3
+conda_greene/*.ext3.gz
 config-files-split/
 config-files_*/
 images_singularity/
