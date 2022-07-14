@@ -15,14 +15,18 @@ cp -rp ${CONDA_DIR}/${SRC_EXT3} ${CONDA_DIR}/${TARGET_EXT3}.gz
 gunzip ${CONDA_DIR}/${TARGET_EXT3}.gz
 
 # Set up the BEELINE conda environment
-cd ${BASEDIR}; singularity exec --overlay ${CONDA_DIR}/${TARGET_EXT3} ${CONDA_DIR}/${TARGET_SIF} \
+cd ${BASEDIR}; singularity exec --overlay ${CONDA_DIR}/${TARGET_EXT3} ${CONDA_DIR}/${TARGET_SIF}\
 	    /bin/sh -c "
 sh ${CONDA_DIR}/Miniconda3-py37_4.10.3-Linux-x86_64.sh -b -p /ext3/miniconda3
 cp ${CONDA_DIR}/overlay_ext3_mc3.sh /ext3/env.sh
 source /ext3/env.sh
-conda create -y --name BEELINE python=3.7.1 r=3.5.0 --file requirements.txt
+conda install -c conda-forge mamba
+mamba create -y --name BEELINE python=3.7.1 r=3.6 --file requirements.txt
+#conda create -y --name BEELINE python=3.7.1 r=3.5.0 --file requirements.txt
 conda activate BEELINE
 R -e \"install.packages('https://cran.r-project.org/src/contrib/PRROC_1.3.1.tar.gz', type = 'source')\"
+R -e \"install.packages('remotes',repos='http://cran.us.r-project.org')\" 
+R -e \"remotes::install_version('precrec',version='0.12.7', repos='https://cran.us.r-project.org')\"
 "
 
 # For sharing with another user only: package the entire environment in a TAR file to share

@@ -1,14 +1,14 @@
 # BEELINE environment
-- copy the base image and overlay
+- copy the base image and overlay from Greene /scratch/work
 ```
 cp /scratch/work/public/apps/greene/centos-8.2.2004.sif .
 cp -rp /scratch/work/public/overlay-fs-ext3/overlay-5GB-200K.ext3.gz .
-gunzip overlay-5GB-200K.ext3.gz
 ```
 
-- rename the overlay
+- rename the overlay and unzip
 ```
-cp overlay-5GB-200K.ext3 overlay-5GB-200K-beeline20211104.ext3
+cp -rp overlay-5GB-200K.ext3.gz overlay-5GB-200K-beeline20211104.ext3.gz
+gunzip  overlay-5GB-200K-beeline20211104.ext3.gz 
 ```
 
 - launch the container with the overlay
@@ -28,16 +28,19 @@ Singularity> cp overlay-5GB-200K-env.sh /ext3/env.sh
 Singularity> source /ext3/env.sh
 ```
 
-- Inside singularity: create the BEELINE virtual environment and install the packages
+- Inside singularity: create the BEELINE virtual environment and install R, Python, and required Python packages
 ```
-Singularity> conda create -y --name BEELINE python=3.7.1 r=3.5.0 --file ../requirements.txt
+Singularity> conda install -c conda-forge mamba 
+Singularity> mamba create -y --name BEELINE python=3.7.1 r=3.6 --file requirements.txt
 
 ```
 
-- Inside sginuarity: activate the BEELINE venv and and install R there
+- Inside sginularity: activate the BEELINE venv and and install required R packages
 ```
 Singularity> conda activate BEELINE
 Singularity> R -e "install.packages('https://cran.r-project.org/src/contrib/PRROC_1.3.1.tar.gz', type = 'source')"
+Singularity> R -e "install.packages('remotes',repos='http://cran.us.r-project.org')"
+Singularity> R -e "remotes::install_version('precrec',version='0.12.7', repos='https://cran.us.r-project.org')"
 ```
 
 - Inside sginuarity: confirm locations of python and R
@@ -107,7 +110,6 @@ Singularity> conda activate CICT
 ```
 (CICT) Singularity> conda install -c conda-forge libgit2 gmp time
 (CICT) Singularity> R -e "install.packages('remotes',repos='https://cloud.r-project.org')"
-(CICT) Singularity> R -e "install.packages('devtools',repos='https://cloud.r-project.org')"
 (CICT) Singularity> R -e "remotes::install_deps('../Algorithms/CICT')"
 ```
 
