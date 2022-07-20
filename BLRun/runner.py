@@ -85,6 +85,7 @@ class Runner(object):
         self.params = params['params']
         self.exprData = params['exprData']
         self.cellData = params['cellData']
+        self.trueEdges = params['trueEdges']
         self.singularityImage = params['singularityImage']
         self.singularityOverlay = params.get('singularityOverlay','')
         
