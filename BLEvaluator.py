@@ -130,6 +130,7 @@ def main():
     outDir = str(evalSummarizer.output_settings.base_dir) + \
             str(evalSummarizer.input_settings.datadir).split("inputs")[1] + "/"+\
             str(evalSummarizer.output_settings.output_prefix) + "-"
+    print(outDir)
     
     # Compute and plot ROC, PRC and report median AUROC, AUPRC
     # possible edges are between nodes in the ground truth
@@ -155,12 +156,16 @@ def main():
         AUROC3.to_csv(outDir+'AUROC3.csv')
         AveP3.to_csv(outDir+'AveP3.csv')
 
+    # Compute and plot ROC, PRC and report median AUROC, AUPRC
+    # possible edges are between nodes in the expression data
     if (opts.auc4):
         AUPRC4, AUROC4, AveP4 = evalSummarizer.computeAUC4()
         AUPRC4.to_csv(outDir+'AUPRC4.csv')
         AUROC4.to_csv(outDir+'AUROC4.csv')
         AveP4.to_csv(outDir+'AveP4.csv')
 
+    # Compute partial AUROC, AUPRC
+    # possible edges are between nodes in the expression data
     if (opts.pauc4):
         PAUC4 = evalSummarizer.computePAUC4()
         for metric_name,metric_df in PAUC4.items():
@@ -192,7 +197,9 @@ def main():
         print('\n\nComputing early precision values...')
         ePRDF = evalSummarizer.computeEarlyPrec()
         ePRDF.to_csv(outDir + "EPr.csv")
-                        
+        ePRDF = evalSummarizer.computeEarlyPrecTFOnly()
+        ePRDF.to_csv(outDir + "EPr-TF.csv")
+        
     # Compute early precision for activation and inhibitory edges
     if (opts.sepr):
         print('\n\nComputing early precision values for activation and inhibitory edges...')

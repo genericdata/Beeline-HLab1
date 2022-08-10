@@ -128,6 +128,8 @@ def EarlyPrec(evalObject, algorithmName, TFEdges = False):
     for dataset in tqdm(evalObject.input_settings.datasets):
         if len(rankDict[dataset["name"]]) != 0:
             intersectionSet = rankDict[dataset["name"]].intersection(trueEdges)
+            print(len(intersectionSet))
+            print(len(rankDict[dataset["name"]]))
             Eprec[dataset["name"]] = len(intersectionSet)/len(rankDict[dataset["name"]])
             Erec[dataset["name"]] = len(intersectionSet)/len(trueEdges)
         else:
