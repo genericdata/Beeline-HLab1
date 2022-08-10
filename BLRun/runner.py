@@ -13,6 +13,8 @@ import BLRun.singeRunner as SINGE
 import BLRun.scribeRunner as SCRIBE
 import BLRun.cictRunner as CICT
 import BLRun.randomRunner as RANDOM
+import BLRun.deepdrimRunner as DEEPDRIM
+import BLRun.cnncRunner as CNNC
 
 from pathlib import Path
 
@@ -31,7 +33,9 @@ InputMapper = {'SCODE':SCODE.generateInputs,
                'SINGE':SINGE.generateInputs,
                'SCRIBE':SCRIBE.generateInputs,
                'CICT':CICT.generateInputs,
-               'RANDOM':RANDOM.generateInputs}
+               'RANDOM':RANDOM.generateInputs,
+               'DEEPDRIM':DEEPDRIM.generateInputs,
+               'CNNC':CNNC.generateInputs}
 
 
 
@@ -51,7 +55,9 @@ AlgorithmMapper = {'SCODE':SCODE.run,
             'SINGE':SINGE.run,
             'SCRIBE':SCRIBE.run,
             'CICT':CICT.run,
-            'RANDOM':RANDOM.run}
+            'RANDOM':RANDOM.run,
+            'DEEPDRIM':DEEPDRIM.run,
+            'CNNC':CNNC.run}
 
 
 
@@ -70,7 +76,9 @@ OutputParser = {'SCODE':SCODE.parseOutput,
             'SINGE':SINGE.parseOutput,
             'SCRIBE':SCRIBE.parseOutput,
             'CICT':CICT.parseOutput,
-            'RANDOM':RANDOM.parseOutput}    
+            'RANDOM':RANDOM.parseOutput,
+            'DEEPDRIM':DEEPDRIM.parseOutput,
+            'CNNC':CNNC.parseOutput}
 
 
 
@@ -88,6 +96,7 @@ class Runner(object):
         self.trueEdges = params['trueEdges']
         self.singularityImage = params['singularityImage']
         self.singularityOverlay = params.get('singularityOverlay','')
+        self.singularityGPUFlag = params.get('singularityGPUFlag','')
         
     def generateInputs(self):
         InputMapper[self.name](self)
