@@ -34,12 +34,13 @@ import pandas as pd
 
 class InputSettings(object):
     def __init__(self,
-                 datadir, datasets, algorithms, sifdir, overlaydir) -> None:
+                 datadir, datasets, algorithms, sifdir, overlaydir, gpuflag) -> None:
         self.datadir = datadir
         self.datasets = datasets
         self.algorithms = algorithms
         self.sifdir = sifdir
         self.overlaydir = overlaydir
+        self.gpuflag = gpuflag
 
 
 class OutputSettings(object):
@@ -87,6 +88,7 @@ class BLRun(object):
                 data['inputDir'] = Path.cwd().joinpath(self.input_settings.datadir.joinpath(dataset['name']))
                 data['singularityImage'] = str(self.input_settings.sifdir) + '/' + data['name'] + '.sif'
                 data['singularityOverlay'] = str(self.input_settings.overlaydir) + '/' + data['name'] + '.ext3'
+                data['singularityGPUFlag'] = self.input_settings.gpuflag
                 data['exprData'] = dataset['exprData']
                 data['cellData'] = dataset['cellData']
                 data['trueEdges'] = dataset['trueEdges']
@@ -150,6 +152,7 @@ class ConfigParser(object):
         datasets_all = input_settings_map['datasets']
         sif_dir = input_settings_map['sif_dir']
         overlay_dir = input_settings_map['overlay_dir']
+        gpu_flag = input_settings_map['gpu_flag']
         algorithms_all = input_settings_map['algorithms']
         
         datasets_select = [] if cmd_args.dataset_names is None else cmd_args.dataset_names.split(',')
@@ -185,7 +188,8 @@ class ConfigParser(object):
                 ConfigParser.__parse_algorithms(
                     algorithm_list),
                 Path(sif_dir),
-                Path(overlay_dir)
+                Path(overlay_dir),
+                gpu_flag
         )
 
 
