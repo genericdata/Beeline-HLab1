@@ -10,7 +10,11 @@ CONDA_DIR=${BASEDIR}/conda_greene
 SIF_DIR=${BASEDIR}/images_singularity
 EXT3_DIR=${BASEDIR}/images_singularity_overlay
 SRC_SIF=${CONDA_DIR}/centos-8.2.2004.sif
+SRC_SIF_GPU=${CONDA_DIR}/cuda11.2.2-cudnn8-devel-ubuntu20.04.sif
+SRC_SIF_GPU2=${CONDA_DIR}/cuda10.2-cudnn7-devel-ubuntu18.04.sif
 SRC_EXT3=${CONDA_DIR}/overlay-5GB-200K.ext3.gz
+SRC_EXT3_10GB=${CONDA_DIR}/overlay-10GB-400K.ext3.gz
+SRC_EXT3_15GB=${CONDA_DIR}/overlay-15GB-500K.ext3.gz
 mkdir -p ${SIF_DIR}
 mkdir -p ${EXT3_DIR}
 
@@ -67,27 +71,31 @@ cd $EXT3_DIR
 ln -s CICT.ext3 RANDOM.ext3
 cd $BASEDIR
 
-# Build DeepDRIM classifier
+
+# Build DEEPDRIM classifier; preferrably on a GPU node
 cd $BASEDIR
-cp ${SRC_SIF} ${SIF_DIR}/DEEPDRIM.sif
-cp -rp ${SRC_EXT3} ${EXT3_DIR}/DEEPDRIM.ext3.gz
+cp -rp ${SRC_SIF_GPU} ${SIF_DIR}/DEEPDRIM.sif
+cp -rp ${SRC_EXT3_15GB} ${EXT3_DIR}/DEEPDRIM.ext3.gz
 gunzip ${EXT3_DIR}/DEEPDRIM.ext3.gz
-cd ${BASEDIR}; singularity exec --overlay ${EXT3_DIR}/DEEPDRIM.ext3 ${SIF_DIR}/DEEPDRIM.sif \
-			   /bin/sh -c "
+cd ${BASEDIR}; singularity exec --nv --overlay ${EXT3_DIR}/DEEPDRIM.ext3 ${SIF_DIR}/DEEPDRIM.sif /bin/bash -c "  
+export CONDA_DIR=conda_greene
 sh ${CONDA_DIR}/Miniconda3-py37_4.10.3-Linux-x86_64.sh -b -p /ext3/miniconda3
-cp ${CONDA_DIR}/overlay_ext3_mc3.sh /ext3/env.sh
+cp ${CONDA_DIR}/overlay_ext3_mc3.sh /ext3/env.sh 
 source /ext3/env.sh
-conda install -c conda-forge mamba
-mamba create -y --name DEEPDRIM -c conda-forge python=3.6 r=3.6
+conda update -n base conda -y 
+conda clean --all --yes
+conda install -c conda-forge mamba 
+mamba create -c conda-forge --name DEEPDRIM tensorflow-gpu python=3.7.10
 conda activate DEEPDRIM
+# test GPU python -c \"from tensorflow.python.keras import backend as K; print(K._get_available_gpus())\"
+mamba install --freeze-installed -c conda-forge numba matplotlib scipy scikit-learn pandas ipykernel
+conda clean --all --yes
 cd /ext3
-git clone https://github.com/jiaxchen2-c/DeepDRIM.git
-cd DeepDRIM
-git checkout 59cd84155bf23733fbd5a03b9fd8922e34bbd006
-mamba install -y -c numba numba
-mamba install -c conda-forge tensorflow
-mamba install -c conda-forge matplotlib scipy scikit-learn pandas
+git clone -b nyu-greene-singularity https://github.com/hlab1/DeepDRIM.git
+cd DeepDRIM                                                                      
+git checkout 13631c995f8e64a3aede8f7b2b80e0b9fa99f759
+conda deactivate
 "
 echo "Singularity files for DEEPDRIM: image is ${SIF_DIR}/DEEPDRIM.sif, overlay is ${EXT3_DIR}/DEEPDRIM.ext3"
-
 cd $BASEDIR
+
