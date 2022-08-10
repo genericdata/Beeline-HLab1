@@ -20,6 +20,9 @@ def get_parser() -> argparse.ArgumentParser:
     parser.add_argument('--config_split_dir', default='config_split',
         help='Output directory of split configs')
 
+    parser.add_argument('--replace_existing', action='store_true',
+        help='Whether to replace existing config files')
+
     return parser
 
 def parse_arguments():
@@ -47,8 +50,8 @@ def main():
     config_map_out = config_map.copy()
     for dataset in datasets:
         for idx in range(len(algorithms_list)):
-            print(dataset)
-            print(idx)
+            #print(dataset)
+            #print(idx)
             config_map_out['input_settings']['datasets'] = [dataset]
             config_map_out['input_settings']['algorithms'] = [algorithms_list[idx]]
             config_map_out['input_settings']['algorithms'][0]['params']['should_run'] = [True]
@@ -56,8 +59,15 @@ def main():
             config_file_out = os.path.join(config_file_dir,'config.yaml')
             print(config_file_out)
             Path(config_file_dir).mkdir(parents=True,exist_ok=True)
-            with open(config_file_out,'w') as ofh:
-                yaml.dump(config_map_out,ofh,default_flow_style=False)
+            if os.path.exists(config_file_out):
+                if opts.replace_existing:
+                    with open(config_file_out,'w') as ofh:
+                        yaml.dump(config_map_out,ofh,default_flow_style=False)
+            else:
+                with open(config_file_out,'w') as ofh:
+                    yaml.dump(config_map_out,ofh,default_flow_style=False)
+
+                    
 
 if __name__ == '__main__':
   main()
