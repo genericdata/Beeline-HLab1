@@ -34,8 +34,11 @@ def getTime(evalObject, dataset):
     
     # Set the output directory for a given dataset 
     # where the time.txt files are stored for each algorithm.
-    outDir = str(evalObject.output_settings.base_dir) + \
-             str(evalObject.input_settings.datadir).split("inputs")[1] + "/" + dataset["name"] + "/"
+    # outDir = str(evalObject.output_settings.base_dir) + \
+    #         str(evalObject.input_settings.datadir).split("inputs")[1] + "/" + dataset["name"] + "/"
+    outDir = "outputs/"+str(evalObject.input_settings.datadir).split("inputs/")[1]+ '/' +dataset['name'] + "/"
+    print('Outdir: '+outDir)
+
     
     # Initialize algorithm:time-taken dictionary
     algo_dict = dict()
