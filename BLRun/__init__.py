@@ -34,8 +34,9 @@ import pandas as pd
 
 class InputSettings(object):
     def __init__(self,
-                 datadir, datasets, algorithms, sifdir, overlaydir, gpuflag) -> None:
+                 datadir, fulldatadir, datasets, algorithms, sifdir, overlaydir, gpuflag) -> None:
         self.datadir = datadir
+        self.fulldatadir = fulldatadir
         self.datasets = datasets
         self.algorithms = algorithms
         self.sifdir = sifdir
@@ -86,6 +87,7 @@ class BLRun(object):
                 data['name'] = runner[0]
                 data['params'] = runner[1]
                 data['inputDir'] = Path.cwd().joinpath(self.input_settings.datadir.joinpath(dataset['name']))
+                data['fullInputDir'] = Path.cwd().joinpath(self.input_settings.fulldatadir.joinpath(dataset['name']))
                 data['singularityImage'] = str(self.input_settings.sifdir) + '/' + data['name'] + '.sif'
                 data['singularityOverlay'] = str(self.input_settings.overlaydir) + '/' + data['name'] + '.ext3'
                 data['singularityGPUFlag'] = self.input_settings.gpuflag
@@ -149,6 +151,7 @@ class ConfigParser(object):
     def __parse_input_settings(input_settings_map,cmd_args) -> InputSettings:
         input_dir = input_settings_map['input_dir']
         dataset_dir = input_settings_map['dataset_dir']
+        full_dataset_dir = input_settings_map['full_dataset_dir']
         datasets_all = input_settings_map['datasets']
         sif_dir = input_settings_map['sif_dir']
         overlay_dir = input_settings_map['overlay_dir']
@@ -184,6 +187,7 @@ class ConfigParser(object):
             
         return InputSettings(
                 Path(input_dir, dataset_dir),
+                Path(input_dir, full_dataset_dir),
                 datasets,
                 ConfigParser.__parse_algorithms(
                     algorithm_list),
