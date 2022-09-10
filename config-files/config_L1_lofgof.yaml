@@ -5,12 +5,14 @@ input_settings:
     # Directory for singularity images, absolute path
     sif_dir: "$(pwd)/images_singularity/"
     overlay_dir: "$(pwd)/images_singularity_overlay"
+    gpu_flag: "--nv"
 
     # Base input directory
     input_dir : "inputs"
 
     # Subdirectory of inputs that datasets are placed in
     dataset_dir: "L1_lofgof"
+    full_dataset_dir: "ALL_lofgof"
 
     # Denotes a list of datasets, each with the following parameters:
     #   name: Name of the dataset. May be used in logging or other
@@ -53,8 +55,20 @@ input_settings:
               supervised.gtProp: [.2] #proportion of GT used for classification
               supervised.train: [.3] #proportion of classification records used for training
               fp.fn.cost: [1/5]  #False positive to False Negative cost ratio for threshold identification
-              
-              
+
+
+        - name: "CNNC"
+          params: 
+              should_run: [True]
+              useGPU: [True]
+
+
+        - name: "DEEPDRIM"
+          params: 
+              should_run: [True]
+              useGPU: [True]
+
+
         - name: "PIDC"
           params: 
               should_run: [True]

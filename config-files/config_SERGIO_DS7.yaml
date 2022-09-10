@@ -5,12 +5,14 @@ input_settings:
     # Directory for singularity images, absolute path
     sif_dir: "$(pwd)/images_singularity/"
     overlay_dir: "$(pwd)/images_singularity_overlay"
+    gpu_flag: "--nv"
 
     # Base input directory
     input_dir : "inputs"
 
     # Subdirectory of inputs that datasets are placed in
     dataset_dir: "SERGIO_DS7"
+    full_dataset_dir: "SERGIO_DS7"
 
     # Denotes a list of datasets, each with the following parameters:
     #   name: Name of the dataset. May be used in logging or other
@@ -23,7 +25,78 @@ input_settings:
     #   trueEdges: Name of the refrence network file in the
     #              edge list format. Needed for evaluation.
     datasets:
+
         - name: "net0"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net1"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net2"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net3"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net4"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net5"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net6"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net7"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net8"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net9"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net10"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net11"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net12"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net13"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net14"
           exprData: "ExpressionData.csv"  
           cellData: "SlingshotPT.csv"
           trueEdges: "refNetwork.csv"
@@ -50,6 +123,18 @@ input_settings:
               supervised.gtProp: [.2] #proportion of GT used for classification
               supervised.train: [.3] #proportion of classification records used for training
               fp.fn.cost: [1/5]  #False positive to False Negative cost ratio for threshold identification
+
+
+        - name: "CNNC"
+          params: 
+              should_run: [True]
+              useGPU: [True]
+
+
+        - name: "DEEPDRIM"
+          params: 
+              should_run: [True]
+              useGPU: [True]
 
 
         - name: "PIDC"
