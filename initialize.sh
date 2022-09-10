@@ -93,7 +93,7 @@ conda clean --all --yes
 cd /ext3
 git clone -b nyu-greene-singularity https://github.com/hlab1/DeepDRIM.git
 cd DeepDRIM                                                                      
-git checkout 13631c995f8e64a3aede8f7b2b80e0b9fa99f759
+git checkout 5f05fb3cc8eff0ee38945baf97ee734ab9d63491
 conda deactivate
 "
 echo "Singularity files for DEEPDRIM: image is ${SIF_DIR}/DEEPDRIM.sif, overlay is ${EXT3_DIR}/DEEPDRIM.ext3"
