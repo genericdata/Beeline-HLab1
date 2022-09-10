@@ -90,6 +90,7 @@ class Runner(object):
                 params):
         self.name = params['name']
         self.inputDir = params['inputDir']
+        self.fullInputDir = params['fullInputDir']
         self.params = params['params']
         self.exprData = params['exprData']
         self.cellData = params['cellData']
