@@ -19,7 +19,7 @@ def generateInputs(RunnerObj):
         print("Input folder for DEEPDRIM does not exist, creating input folder...")
         RunnerObj.inputDir.joinpath("DEEPDRIM").mkdir(exist_ok = False)
         
-    if not RunnerObj.inputDir.joinpath("DEEPDRIM/toPredict_pairsDEEPDRIM.txtTF_divide_pos.txt").exists():
+    if not RunnerObj.inputDir.joinpath("DEEPDRIM/predict_pairsDEEPDRIM.txtTF_divide_pos.txt").exists():
         # input expression data
         print('Expression data: '+str(RunnerObj.inputDir.joinpath(RunnerObj.exprData)))
         ExpressionData = pd.read_csv(RunnerObj.inputDir.joinpath(RunnerObj.exprData),
