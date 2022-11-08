@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import argparse
+import copy
 import pandas as pd
 from itertools import product, permutations, combinations, combinations_with_replacement
 import numpy as np
@@ -43,6 +44,9 @@ def get_parser() -> argparse.ArgumentParser:
     parser.add_argument('-r','--numRandGenes', type=int, default = 500,
                         help='Number of random genes to add. Default=500. \n')
 
+    parser.add_argument('-x','--numExcludeFromRand', type=int, default = 500,
+                        help='Number of top genes to exclude from random selection. Default=500. \n')
+    
     parser.add_argument('-t','--TFs', action='store_true', default = False,
                         help='Add all significantly varying TFs. Default = False.\n')
 
@@ -71,6 +75,7 @@ pval_cutoff = opts.pVal
 bf_corr = opts.BFcorr
 num_genes = opts.numGenes
 num_rand_genes = opts.numRandGenes
+num_exclude_genes = opts.numExcludeFromRand
 sort_by_variance = True
 print("\nReading %s" % (expr_file))
 expr_df = pd.read_csv(expr_file, header=0, index_col=0)
@@ -144,12 +149,38 @@ if num_genes > 0:
             gene_df.sort_values(by=var_col, inplace=True, ascending = False)
 
         variable_genes_new = gene_df.iloc[:num_genes].index.values
+        
     variable_genes = set(variable_genes_new) | set(variable_tfs)
 
 print("\nSelected %d genes: %d variable genes and %d TFs" % (len(variable_genes),
                                                              len(variable_genes_new),
                                                              len(variable_tfs)))
-not_selected_genes = set(gene_df.index.values) - variable_genes
+
+variable_genes_exclude = copy.copy(variable_genes)
+if num_exclude_genes > 0:
+    if num_exclude_genes > len(gene_df):
+        variable_genes_exclude = gene_df.index
+        pass
+    else:
+        if sort_by_variance:
+            #print("\nSorting by variance...")
+            if len(gene_df.columns) < 2:
+                print("ERROR: no variance column found. Should be 3rd column. Quitting")
+                sys.exit()
+            var_col = gene_df.columns[1]
+            #print("Using the column '%s' as the variance columns" % (var_col))
+            # the third column is the variance. Sort by that
+
+            gene_df.sort_values(by=var_col, inplace=True, ascending = False)
+
+        variable_genes_exclude = gene_df.iloc[:num_exclude_genes].index.values
+
+    variable_genes_exclude = set(variable_genes_exclude) | set(variable_tfs)
+print("\nExclude %d genes from random selection: %d variable genes and %d TFs"% (len(variable_genes_exclude),
+                                                                                 num_exclude_genes,
+                                                                                 len(variable_tfs)))
+    
+not_selected_genes = set(gene_df.index.values) - variable_genes_exclude
 if num_rand_genes > 0:
     if num_rand_genes > len(not_selected_genes):
         rand_genes = set(not_selected_genes)
