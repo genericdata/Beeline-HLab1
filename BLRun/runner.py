@@ -14,6 +14,9 @@ import BLRun.scribeRunner as SCRIBE
 import BLRun.cictRunner as CICT
 import BLRun.randomRunner as RANDOM
 import BLRun.deepdrimRunner as DEEPDRIM
+import BLRun.deepdrim4Runner as DEEPDRIM4
+import BLRun.deepdrim5Runner as DEEPDRIM5
+import BLRun.deepdrim6Runner as DEEPDRIM6
 import BLRun.cnncRunner as CNNC
 
 from pathlib import Path
@@ -35,6 +38,9 @@ InputMapper = {'SCODE':SCODE.generateInputs,
                'CICT':CICT.generateInputs,
                'RANDOM':RANDOM.generateInputs,
                'DEEPDRIM':DEEPDRIM.generateInputs,
+               'DEEPDRIM4':DEEPDRIM4.generateInputs,
+               'DEEPDRIM5':DEEPDRIM5.generateInputs,
+               'DEEPDRIM6':DEEPDRIM6.generateInputs,
                'CNNC':CNNC.generateInputs}
 
 
@@ -57,6 +63,9 @@ AlgorithmMapper = {'SCODE':SCODE.run,
             'CICT':CICT.run,
             'RANDOM':RANDOM.run,
             'DEEPDRIM':DEEPDRIM.run,
+            'DEEPDRIM4':DEEPDRIM4.run,
+            'DEEPDRIM5':DEEPDRIM5.run,
+            'DEEPDRIM6':DEEPDRIM6.run,
             'CNNC':CNNC.run}
 
 
@@ -78,6 +87,9 @@ OutputParser = {'SCODE':SCODE.parseOutput,
             'CICT':CICT.parseOutput,
             'RANDOM':RANDOM.parseOutput,
             'DEEPDRIM':DEEPDRIM.parseOutput,
+            'DEEPDRIM4':DEEPDRIM4.parseOutput,
+            'DEEPDRIM5':DEEPDRIM5.parseOutput,
+            'DEEPDRIM6':DEEPDRIM6.parseOutput,
             'CNNC':CNNC.parseOutput}
 
 
