@@ -99,3 +99,12 @@ conda deactivate
 echo "Singularity files for DEEPDRIM: image is ${SIF_DIR}/DEEPDRIM.sif, overlay is ${EXT3_DIR}/DEEPDRIM.ext3"
 cd $BASEDIR
 
+cd $SIF_DIR
+ln -s DEEPDRIM.sif DEEPDRIM4.sif
+ln -s DEEPDRIM.sif DEEPDRIM5.sif
+ln -s DEEPDRIM.sif DEEPDRIM6.sif
+cd $EXT3_DIR
+ln -s DEEPDRIM.ext3 DEEPDRIM4.ext3
+ln -s DEEPDRIM.ext3 DEEPDRIM5.ext3
+ln -s DEEPDRIM.ext3 DEEPDRIM6.ext3
+cd $BASEDIR
