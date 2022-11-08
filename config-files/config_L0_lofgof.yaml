@@ -69,6 +69,24 @@ input_settings:
               useGPU: [True]
 
 
+        - name: "DEEPDRIM4"
+          params: 
+              should_run: [True]
+              useGPU: [True]
+
+
+        - name: "DEEPDRIM5"
+          params: 
+              should_run: [True]
+              useGPU: [True]
+
+
+        - name: "DEEPDRIM6"
+          params: 
+              should_run: [True]
+              useGPU: [True]
+
+
         - name: "PIDC"
           params: 
               should_run: [True]

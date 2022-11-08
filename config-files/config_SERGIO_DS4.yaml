@@ -101,6 +101,81 @@ input_settings:
           cellData: "SlingshotPT.csv"
           trueEdges: "refNetwork.csv"
 
+        - name: "net0_sh6.5_perc80"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net1_sh6.5_perc80"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net2_sh6.5_perc80"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net3_sh6.5_perc80"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net4_sh6.5_perc80"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net5_sh6.5_perc80"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net6_sh6.5_perc80"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net7_sh6.5_perc80"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net8_sh6.5_perc80"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net9_sh6.5_perc80"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net10_sh6.5_perc80"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net11_sh6.5_perc80"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net12_sh6.5_perc80"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net13_sh6.5_perc80"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
+        - name: "net14_sh6.5_perc80"
+          exprData: "ExpressionData.csv"  
+          cellData: "SlingshotPT.csv"
+          trueEdges: "refNetwork.csv"
+
     #   name: Name of the algorithm. Must be recognized by the pipeline, see
     #       code for acceptable values
     #
@@ -132,6 +207,24 @@ input_settings:
 
 
         - name: "DEEPDRIM"
+          params: 
+              should_run: [True]
+              useGPU: [True]
+
+
+        - name: "DEEPDRIM4"
+          params: 
+              should_run: [True]
+              useGPU: [True]
+
+
+        - name: "DEEPDRIM5"
+          params: 
+              should_run: [True]
+              useGPU: [True]
+
+
+        - name: "DEEPDRIM6"
           params: 
               should_run: [True]
               useGPU: [True]
