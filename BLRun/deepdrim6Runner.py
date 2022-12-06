@@ -11,7 +11,7 @@ def generateInputs(RunnerObj):
     deepdrimRunner.generateInputsForPredict(RunnerObj,'DEEPDRIM6',RunnerObj.inputDir)
 
 def run(RunnerObj):
-    deepdrimRunner.runForPredict(RunnerObj,'DEEPDRIM6',RunnerObj.inputDir)
+    deepdrimRunner.runForTrainAndPredict(RunnerObj,'DEEPDRIM6',RunnerObj.inputDir)
                                           
 def parseOutput(RunnerObj):
     deepdrimRunner.parseOutputForPredict(RunnerObj,'DEEPDRIM6',RunnerObj.inputDir)
