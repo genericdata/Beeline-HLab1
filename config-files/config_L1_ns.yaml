@@ -117,6 +117,13 @@ input_settings:
               useGPU: [True]
 
 
+        - name: "DEEPDRIM7"
+          params: 
+              should_run: [True]
+              useGPU: [True]
+              numBatches: [20]
+
+
         - name: "PIDC"
           params: 
               should_run: [True]
