@@ -20,4 +20,4 @@ config-files_*/
 images_singularity/
 images_singularity_overlay/
 outputs_slurm/
-slurm/
+/slurm/
