@@ -9,16 +9,17 @@ from sklearn import metrics
 
 add_bind = ''
 def generateInputsForPredict(RunnerObj,algName,trainingPairsInputDir):
-    if not RunnerObj.inputDir.joinpath(algName).exists():
-        print("Input folder for "+algName+" does not exist, creating input folder...")
-        RunnerObj.inputDir.joinpath(algName).mkdir(exist_ok = False)
+    runDir = RunnerObj.params.get('run_dir','')
+    if not RunnerObj.inputDir.joinpath(algName,runDir).exists():
+        print("Input folder for "+algName+" "+runDir+" does not exist, creating input folder...")
+        RunnerObj.inputDir.joinpath(algName,runDir).mkdir(exist_ok = False)
 
-    if not RunnerObj.inputDir.joinpath(algName,"GeneName_map.txt").exists():
-        print('Expression data: '+str(RunnerObj.inputDir.joinpath(algName,"ExpressionData.csv")))
-        ExpressionData = pd.read_csv(RunnerObj.inputDir.joinpath(algName,"ExpressionData.csv"),
+    if not RunnerObj.inputDir.joinpath(algName,runDir,"GeneName_map.txt").exists():
+        print('Expression data: '+str(RunnerObj.inputDir.joinpath(algName,runDir,"ExpressionData.csv")))
+        ExpressionData = pd.read_csv(RunnerObj.inputDir.joinpath(algName,runDir,"ExpressionData.csv"),
                                      header = 0, index_col = 0)
         geneNameMap = pd.concat([ExpressionData.index.to_series().str.lower(),ExpressionData.index.to_series()],axis=1)
-        geneNameMap.to_csv(RunnerObj.inputDir.joinpath(algName,"GeneName_map.txt"),
+        geneNameMap.to_csv(RunnerObj.inputDir.joinpath(algName,runDir,"GeneName_map.txt"),
                            sep='\t',header=False,index=False)  
     
 def generateInputs(RunnerObj):
@@ -81,8 +82,9 @@ def runForPredict(RunnerObj,algName,trainingPairsInputDir):
     '''
     # current path will be mounted as /ext3/data
     # '/ext3/data/inputs/L0/hESC/DEEPDRIM'
+    runDir = RunnerObj.params.get('run_dir','')
     inputDir = Path('/ext3/data').joinpath(RunnerObj.inputDir.relative_to(Path.cwd()),algName)
-    trainingPairsInputDir = Path('/ext3/data').joinpath(trainingPairsInputDir.relative_to(Path.cwd()),algName)
+    trainingPairsInputDir = Path('/ext3/data').joinpath(trainingPairsInputDir.relative_to(Path.cwd()),algName,runDir)
 
     # outputs/L0/hESC/DEEPDRIM
     # make output dirs if they do not exist:
@@ -129,7 +131,7 @@ def runForPredict(RunnerObj,algName,trainingPairsInputDir):
             '--overlay ' + str(RunnerObj.singularityOverlay) + ':ro',
             str(RunnerObj.singularityImage),
             '/bin/bash -c \"source /ext3/env.sh; conda activate DEEPDRIM; ',
-            'cd',str(Path('/ext3/data').joinpath(outDir)),';',
+            'cd',str(Path('/ext3/data').joinpath(outDir,runDir)),';',
             'mkdir -p '+'training_pairs'+algName+'.txtCV_fold_divide/test_fold-'+str(i)+'_saved_models200_predict/; ',
             'command time -v -o time_predict.txt',
             'python /scratch/ch153/packages/DeepDRIM/hlab1/DeepDRIM/DeepDRIM.py',
@@ -204,7 +206,7 @@ def run_old(RunnerObj):
             'python /ext3/DeepDRIM/DeepDRIM.py',
             '-to_predict True',
             '-num_batches '+str(numBatches),
-            '-data_path representation_predict/version11/',
+            '-data_path '+str(inputDir.joinpath('representation_predict/version11'))+'/',
             '-output_dir '+'training_pairsDEEPDRIM.txtCV_fold_divide/test_fold-'+str(i)+'_saved_models200_predict/',
             '-weight_path '+str(model_file),
         '\"'])
@@ -219,19 +221,20 @@ def runForTrainAndPredict(RunnerObj,algName,trainingPairsInputDir):
     '''
     # current path will be mounted as /ext3/data
     # '/ext3/data/inputs/L0/hESC/DEEPDRIM'
+    runDir = RunnerObj.params.get('run_dir','')
     inputDirB = Path('/ext3/data').joinpath(RunnerObj.inputDir.relative_to(Path.cwd()),algName)
-    trainingPairsInputDir = trainingPairsInputDir.relative_to(Path.cwd()).joinpath(algName)
+    trainingPairsInputDir = trainingPairsInputDir.relative_to(Path.cwd()).joinpath(algName,runDir)
     trainingPairsInputDirB = Path('/ext3/data').joinpath(trainingPairsInputDir)
     train_pairs_cv_fold_divide = 'training_pairs'+algName+'.txtCV_fold_divide'
 
     # outputs/L0/hESC/DEEPDRIM
     # make output dirs if they do not exist:
-    outDir = "outputs/"+str(RunnerObj.inputDir).split("inputs/")[1]+"/"+algName+"/"
+    outDir = "outputs/"+str(RunnerObj.inputDir).split("inputs/")[1]+"/"+algName+"/"+('' if runDir=='' else runDir+"/")
     outDirB = Path('/ext3/data').joinpath(outDir)
     os.makedirs(outDir, exist_ok = True)
 
     # Training
-    with open(RunnerObj.inputDir.joinpath(algName,'training_pairs'+algName+'.txtTF_divide_pos.txt'), 'r') as fp:
+    with open(RunnerObj.inputDir.joinpath(algName,runDir,'training_pairs'+algName+'.txtTF_divide_pos.txt'), 'r') as fp:
         train_num_batches = len(fp.readlines()) -1
     if trainingPairsInputDir.joinpath(train_pairs_cv_fold_divide).exists():
         print("CV training folder for "+algName+" exists, removing CV training folder...")
@@ -253,7 +256,7 @@ def runForTrainAndPredict(RunnerObj,algName,trainingPairsInputDir):
         '-cross_validation_fold_divide_file '+train_pairs_cv_fold_divide+'.txt',
         '\"'])
     print(cmdToRun)
-    os.system(cmdToRun)
+    #os.system(cmdToRun)
 
     # Prediction
     loadFromH5 = False
@@ -277,12 +280,12 @@ def runForTrainAndPredict(RunnerObj,algName,trainingPairsInputDir):
             'python /scratch/ch153/packages/DeepDRIM/hlab1/DeepDRIM/DeepDRIM.py',
             '-to_predict 2',
             '-num_batches '+str(predict_num_batches),
-            '-data_path '+str(trainingPairsInputDirB.joinpath('representation_predict/version11'))+'/',
+            '-data_path '+str(inputDirB.joinpath('representation_predict/version11'))+'/',
             '-output_dir '+str(Path(train_pairs_cv_fold_divide).joinpath('test_fold-'+str(i)+'_saved_models200_predict'))+'/',
             '-weight_path '+str(model_file),
         '\"'])
         print(cmdToRun)
-        os.system(cmdToRun)
+        #os.system(cmdToRun)
 
 def run(RunnerObj):
     runForTrainAndPredict(RunnerObj,'DEEPDRIM',RunnerObj.fullInputDir)
@@ -296,14 +299,14 @@ def parseOutputForPredict(RunnerObj,algName,trainingPairsInputDir):
     :param RunnerObj: An instance of the :class:`BLRun`
     '''
     # Quit if output directory does not exist
-    outDir = "outputs/"+str(RunnerObj.inputDir).split("inputs/")[1]+"/"+algName+"/"
+    runDir = RunnerObj.params.get('run_dir','')
+    outDir = "outputs/"+str(RunnerObj.inputDir).split("inputs/")[1]+"/"+algName+"/"+('' if runDir=='' else runDir+"/")
     #if not Path(outDir+'outFile.txt').exists():
     #    print(outDir+'outFile.txt'+'does not exist, skipping...')
     #    return
-    
-    trainingPairs = pd.read_csv(trainingPairsInputDir.joinpath(algName,'training_pairs'+algName+'.txt'),
+    trainingPairs = pd.read_csv(trainingPairsInputDir.joinpath(algName,runDir,'training_pairs'+algName+'.txt'),
                                 sep='\t',header=None,index_col=None)
-    trainingDividePos = np.genfromtxt(trainingPairsInputDir.joinpath(algName,'training_pairs'+algName+'.txtTF_divide_pos.txt'),
+    trainingDividePos = np.genfromtxt(trainingPairsInputDir.joinpath(algName,runDir,'training_pairs'+algName+'.txtTF_divide_pos.txt'),
                                 delimiter=',',dtype='int')
     trainingEdgesFrom = trainingPairs.iloc[trainingDividePos[:-1],0].reset_index(drop=True)
 
@@ -314,9 +317,9 @@ def parseOutputForPredict(RunnerObj,algName,trainingPairsInputDir):
     predictEdgesFrom = predictPairs.iloc[predictDividePos[:-1],0].reset_index(drop=True)
     predictEdgesFromInTrain = trainingEdgesFrom.index[trainingEdgesFrom.isin(predictEdgesFrom)]
 
-    geneNameMap = pd.read_csv(RunnerObj.inputDir.joinpath(algName,'GeneName_map.txt'),
+    geneNameMap = pd.read_csv(RunnerObj.inputDir.joinpath(algName,runDir,'GeneName_map.txt'),
                               sep='\t',header=None,index_col=0,names=['name_to'])
-    with open(trainingPairsInputDir.joinpath(algName,'training_pairs'+algName+'.txtCV_fold_divide.txt'),'r') as ifh:
+    with open(trainingPairsInputDir.joinpath(algName,runDir,'training_pairs'+algName+'.txtCV_fold_divide.txt'),'r') as ifh:
         cross_fold = []
         for line in ifh:
             line = line.strip()
@@ -358,13 +361,14 @@ def parseOutputForPredictFromBestModel(RunnerObj,algName,trainingPairsInputDir,m
     :param RunnerObj: An instance of the :class:`BLRun`
     '''
     # Quit if output directory does not exist
-    outDir = "outputs/"+str(RunnerObj.inputDir).split("inputs/")[1]+"/"+algName+"/"
+    runDir = RunnerObj.params.get('run_dir','')    
+    outDir = "outputs/"+str(RunnerObj.inputDir).split("inputs/")[1]+"/"+algName+"/"+('' if runDir=='' else runDir+"/")
     #if not Path(outDir+'outFile.txt').exists():
     #    print(outDir+'outFile.txt'+'does not exist, skipping...')
     #    return
-    geneNameMap = pd.read_csv(RunnerObj.inputDir.joinpath(algName,'GeneName_map.txt'),
+    geneNameMap = pd.read_csv(RunnerObj.inputDir.joinpath(algName,runDir,'GeneName_map.txt'),
                               sep='\t',header=None,index_col=0,names=['name_to'])
-    with open(trainingPairsInputDir.joinpath(algName,'training_pairs'+algName+'.txtCV_fold_divide.txt'),'r') as ifh:
+    with open(trainingPairsInputDir.joinpath(algName,runDir,'training_pairs'+algName+'.txtCV_fold_divide.txt'),'r') as ifh:
         cross_fold = []
         for line in ifh:
             line = line.strip()
@@ -376,9 +380,9 @@ def parseOutputForPredictFromBestModel(RunnerObj,algName,trainingPairsInputDir,m
     # use performance in test set from training
     for indel_i,indel_list in enumerate(cross_fold):
         indel_i_dir = 'training_pairs'+algName+'.txtCV_fold_divide/test_fold-'+str(indel_i)+'_saved_models200'
-        y_predict_train = pd.read_csv(trainingPairsInputDir.joinpath(algName,indel_i_dir,'end_y_predict.csv'),
+        y_predict_train = pd.read_csv(trainingPairsInputDir.joinpath(algName,runDir,indel_i_dir,'end_y_predict.csv'),
                                       sep=',',header=None,index_col=None)
-        y_test_train = pd.read_csv(trainingPairsInputDir.joinpath(algName,indel_i_dir,'end_y_test.csv'),
+        y_test_train = pd.read_csv(trainingPairsInputDir.joinpath(algName,runDir,indel_i_dir,'end_y_test.csv'),
                                    sep=',',header=None,index_col=None)
         print('indel_list'+str(indel_i),indel_list)
         if (metricName=='auprc'):
