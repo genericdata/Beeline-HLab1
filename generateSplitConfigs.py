@@ -55,10 +55,12 @@ def main():
             config_map_out['input_settings']['datasets'] = [dataset]
             config_map_out['input_settings']['algorithms'] = [algorithms_list[idx]]
             config_map_out['input_settings']['algorithms'][0]['params']['should_run'] = [True]
+
+            # create one config for this algorithm on this dataset
             config_file_dir = os.path.join(opts.config_split_dir,dataset['name'],algorithms_list[idx]['name'])
+            Path(config_file_dir).mkdir(parents=True,exist_ok=True)
             config_file_out = os.path.join(config_file_dir,'config.yaml')
             print(config_file_out)
-            Path(config_file_dir).mkdir(parents=True,exist_ok=True)
             if os.path.exists(config_file_out):
                 if opts.replace_existing:
                     with open(config_file_out,'w') as ofh:
@@ -67,6 +69,22 @@ def main():
                 with open(config_file_out,'w') as ofh:
                     yaml.dump(config_map_out,ofh,default_flow_style=False)
 
+            # if more than 1 run is specified, create one config for each run of this algorithm on this dataset
+            num_runs = int(config_map_out['input_settings']['algorithms'][0]['params'].get('numRuns',[0])[0])
+            if (num_runs>0):
+                for run_i in range(1,num_runs+1):
+                    config_map_out['input_settings']['algorithms'][0]['params']['run_dir'] = ['run_'+str(run_i)]
+                    config_file_dir = os.path.join(opts.config_split_dir,dataset['name'],algorithms_list[idx]['name'],'run_'+str(run_i))
+                    Path(config_file_dir).mkdir(parents=True,exist_ok=True)
+                    config_file_out = os.path.join(config_file_dir,'config.yaml')
+                    print(config_file_out)
+                    if os.path.exists(config_file_out):
+                        if opts.replace_existing:
+                            with open(config_file_out,'w') as ofh:
+                                yaml.dump(config_map_out,ofh,default_flow_style=False)
+                    else:
+                        with open(config_file_out,'w') as ofh:
+                            yaml.dump(config_map_out,ofh,default_flow_style=False)
                     
 
 if __name__ == '__main__':
