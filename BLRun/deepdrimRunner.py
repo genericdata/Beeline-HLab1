@@ -256,7 +256,7 @@ def runForTrainAndPredict(RunnerObj,algName,trainingPairsInputDir):
         '-cross_validation_fold_divide_file '+train_pairs_cv_fold_divide+'.txt',
         '\"'])
     print(cmdToRun)
-    #os.system(cmdToRun)
+    os.system(cmdToRun)
 
     # Prediction
     loadFromH5 = False
@@ -285,7 +285,7 @@ def runForTrainAndPredict(RunnerObj,algName,trainingPairsInputDir):
             '-weight_path '+str(model_file),
         '\"'])
         print(cmdToRun)
-        #os.system(cmdToRun)
+        os.system(cmdToRun)
 
 def run(RunnerObj):
     runForTrainAndPredict(RunnerObj,'DEEPDRIM',RunnerObj.fullInputDir)
@@ -361,7 +361,7 @@ def parseOutputForPredictFromBestModel(RunnerObj,algName,trainingPairsInputDir,m
     :param RunnerObj: An instance of the :class:`BLRun`
     '''
     # Quit if output directory does not exist
-    runDir = RunnerObj.params.get('run_dir','')    
+    runDir = RunnerObj.params.get('run_dir','')
     outDir = "outputs/"+str(RunnerObj.inputDir).split("inputs/")[1]+"/"+algName+"/"+('' if runDir=='' else runDir+"/")
     #if not Path(outDir+'outFile.txt').exists():
     #    print(outDir+'outFile.txt'+'does not exist, skipping...')

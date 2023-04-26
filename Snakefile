@@ -168,8 +168,10 @@ rule beeline_exp_cictpairs_multi_out:
                  train_test=['train','test'],\
                  train_i=range(1,11),\
                  ds=EXP_PARAM_DF[(EXP_PARAM_DF.exp_dir=='L2_lofgof') & (EXP_PARAM_DF.dataset=='mESC')].groupby(['exp_dir','dataset']).count().reset_index().itertuples())
+rule beeline_exp_cictpairs_multi_out2:
+    shell: "echo {rules.beeline_exp_cictpairs_multi_out.input}"
 
-
+   
 # Generate training pairs data for DEEPDRIM using full BEELINE datasets
 rule beeline_exp_deepdrim_pairs:
    input: expfile=os.path.join(BEELINE_DATA_DIR,'inputs/scRNA-Seq/{dataset}/ExpressionData-upper.csv'),\
@@ -974,6 +976,21 @@ rule beeline_sergio_deepdrim7_train_out:
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_sergio_deepdrim7_train_out
 ### NEED TO REMOVE END: DEEPDRIM TRAINING is now run as part of BLRun####
 
+################################################
+## organize CICT experiment results for BEELINE
+################################################
+rule beeline_exp_cict_multi:
+   input: exp_cict_in='outputs_cict_learn/{exp_dir}/{dataset}/{train_i}/rankedEdges.csv'
+   output: exp_cict_out='{outputs_dir}/{exp_dir}/{dataset}/CICT/run_{train_i}/rankedEdges.csv'
+   shell: """
+        cp {input.exp_cict_in} {output.exp_cict_out}
+   """
+rule beeline_exp_cict_multi_out:
+   input: expand('outputs/{ds.exp_dir}/{ds.dataset}/CICT/run_{train_i}/rankedEdges.csv',\
+                 train_i=range(2,3),\
+                 ds=EXP_PARAM_DF[(EXP_PARAM_DF.exp_dir=='L2_lofgof') & (EXP_PARAM_DF.dataset=='mESC')].groupby(['exp_dir','dataset']).count().reset_index().itertuples())
+
+
 ##############################################
 ### organize CICT SERGIO results for BEELINE
 ##############################################
@@ -1047,7 +1064,8 @@ def get_run_gpu(wildcards):
     switcher = {
         'DEEPDRIM': '--gres=gpu:1',
         'DEEPDRIM4': '--gres=gpu:1',
-        'DEEPDRIM7': '--gres=gpu:rtx8000:1'
+        'DEEPDRIM7': '--gres=gpu:rtx8000:1',
+        'DEEPDRIM8': '--gres=gpu:rtx8000:1'
         }
     return switcher.get(wildcards.algorithm, '')
 
@@ -1134,9 +1152,9 @@ def get_eval_time(wildcards):
         "L0_ns": "4:00:00",
         "L1_ns": "4:00:00",
         "L2_ns": "4:00:00",
-        "L0_lofgof": "12:00:00",
-        "L1_lofgof": "12:00:00",
-        "L2_lofgof": "12:00:00",
+        "L0_lofgof": "4:00:00",
+        "L1_lofgof": "4:00:00",
+        "L2_lofgof": "4:00:00",
         "SERGIO_DS4": "0:10:00",
         "SERGIO_DS5": "0:10:00",
         "SERGIO_DS6": "0:10:00",
@@ -1145,7 +1163,7 @@ def get_eval_time(wildcards):
     return switcher.get(wildcards.exp_dir, "03:00:00")
 
 def beeline_eval_input(wildcards):
-    netout = 'outputs/{exp_dir}/{dataset}/{algorithm}/rankedEdges.csv'.format(**wildcards)
+    netout = 'outputs/{exp_dir}/{dataset}/{algorithm}/{run_i}/rankedEdges.csv'.format(**wildcards)
     if (os.path.exists(netout)):
         return netout
     else:
@@ -1153,14 +1171,14 @@ def beeline_eval_input(wildcards):
     
 rule beeline_eval:
     input: netout=beeline_eval_input
-    output: 'outputs_eval/{exp_dir}/{dataset}/{algorithm}/{exp_dir}-{metric}.out'
-    log: 'outputs_eval/{exp_dir}/{dataset}/{algorithm}/{exp_dir}-{metric}.log'
-    params: config='config-files-split/config_{exp_dir}_split/{dataset}/{algorithm}/config.yaml',\
+    output: 'outputs_eval/{exp_dir}/{dataset}/{algorithm}/{run_i,(run_[0-9]+)?}/{exp_dir}-{metric}.out'
+    log: 'outputs_eval/{exp_dir}/{dataset}/{algorithm}/{run_i}/{exp_dir}-{metric}.log'
+    params: config='config-files-split/config_{exp_dir}_split/{dataset}/{algorithm}/{run_i}/config.yaml',\
             overlay="conda_greene/overlay-5GB-200K-beeline20211104.ext3",\
             sif="conda_greene/centos-8.2.2004.sif",\
-            D="outputs_eval/{exp_dir}/{dataset}/{algorithm}",\
+            D="outputs_eval/{exp_dir}/{dataset}/{algorithm}/{run_i}",\
             output_dir="outputs_eval",\
-            output_prefix="{dataset}/{algorithm}/{exp_dir}",\
+            output_prefix="{dataset}/{algorithm}/{run_i}/{exp_dir}",\
             jobname="ble_{exp_dir}-{dataset}-{algorithm}",\
             clog_prefix="{exp_dir}-{metric}"
     threads: 1
@@ -1180,7 +1198,7 @@ rule beeline_eval_out:
    input: expand('outputs_eval/{exp_dir}/{dataset}/{algorithm}/{exp_dir}-{metric}.out',\
                  exp_dir=['L0','L1','L2'],\
                  dataset=DATASET_PARAMS['ns']['dataset'],\
-                 algorithm=['DEEPDRIM7'],\
+                 algorithm=['CICT'],\
                  metric=['epr','auc','auc3','auc4','pauc4'])
 #                 algorithm=[alg for alg in ALGORITHMS if alg not in ['DEEPDRIM','DEEPDRIM5','DEEPDRIM6','GRNVBEM']],\
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_eval_out
@@ -1199,7 +1217,19 @@ rule beeline_eval_lofgof_out:
                  exp_dir=['L0_lofgof','L1_lofgof','L2_lofgof'],\
                  dataset=DATASET_PARAMS['lofgof']['dataset'],\
                  algorithm=['DEEPDRIM7'],\
-                 metric=['epr','auc','auc3','auc4','pauc4'])
+                 metric=['epr','auc3','auc4','pauc4']) +
+          expand('outputs_eval/{exp_dir}/{dataset}/{algorithm}/run_{train_i}/{exp_dir}-{metric}.out',\
+                 exp_dir=['L2_lofgof'],\
+                 dataset=DATASET_PARAMS['lofgof']['dataset'],\
+                 algorithm=['DEEPDRIM8'],\
+                 train_i=range(1,11),
+                 metric=['epr','auc3','auc4','pauc4']) +
+          expand('outputs_eval/{exp_dir}/{dataset}/{algorithm}/run_{train_i}/{exp_dir}-{metric}.out',\
+                 exp_dir=['L2_lofgof'],\
+                 dataset=DATASET_PARAMS['lofgof']['dataset'],\
+                 algorithm=['CICT'],\
+                 train_i=range(1,11),
+                 metric=['epr','auc3','auc4','pauc4'])
 #                 algorithm=[alg for alg in ALGORITHMS if alg not in ['DEEPDRIM','DEEPDRIM5','DEEPDRIM6','SCNS','GRNVBEM']],\   
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_eval_lofgof_out
 rule beeline_eval_sergio_out:
