@@ -20,6 +20,7 @@ import BLRun.deepdrim6Runner as DEEPDRIM6
 import BLRun.deepdrim7Runner as DEEPDRIM7
 import BLRun.deepdrim8Runner as DEEPDRIM8
 import BLRun.cnncRunner as CNNC
+import BLRun.inferelator3Runner as INFERELATOR3
 
 from pathlib import Path
 
@@ -45,7 +46,9 @@ InputMapper = {'SCODE':SCODE.generateInputs,
                'DEEPDRIM6':DEEPDRIM6.generateInputs,
                'DEEPDRIM7':DEEPDRIM7.generateInputs,
                'DEEPDRIM8':DEEPDRIM8.generateInputs,
-               'CNNC':CNNC.generateInputs}
+               'CNNC':CNNC.generateInputs,
+               'INFERELATOR31':INFERELATOR3.generateInputs,
+               'INFERELATOR32':INFERELATOR3.generateInputs}
 
 
 
@@ -72,7 +75,9 @@ AlgorithmMapper = {'SCODE':SCODE.run,
             'DEEPDRIM6':DEEPDRIM6.run,
             'DEEPDRIM7':DEEPDRIM7.run,
             'DEEPDRIM8':DEEPDRIM8.run,
-            'CNNC':CNNC.run}
+            'CNNC':CNNC.run,
+            'INFERELATOR31':INFERELATOR3.run,
+            'INFERELATOR32':INFERELATOR3.run}
 
 
 
@@ -99,7 +104,9 @@ OutputParser = {'SCODE':SCODE.parseOutput,
             'DEEPDRIM7':DEEPDRIM7.parseOutput,
             'DEEPDRIM7':DEEPDRIM8.parseOutput,
             'DEEPDRIM8':DEEPDRIM8.parseOutput,
-            'CNNC':CNNC.parseOutput}
+            'CNNC':CNNC.parseOutput,
+            'INFERELATOR31':INFERELATOR3.parseOutput,
+            'INFERELATOR31':INFERELATOR3.parseOutput}
 
 
 

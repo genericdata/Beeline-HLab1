@@ -112,3 +112,25 @@ ln -s DEEPDRIM.ext3 DEEPDRIM6.ext3
 ln -s DEEPDRIM.ext3 DEEPDRIM7.ext3
 ln -s DEEPDRIM.ext3 DEEPDRIM8.ext3
 cd $BASEDIR
+
+# Build Inferelator 3.0
+cd $BASEDIR
+cp ${SRC_SIF} ${SIF_DIR}/INFERELATOR3.sif
+cp -rp ${SRC_EXT3} ${EXT3_DIR}/INFERELATOR3.ext3.gz
+gunzip ${EXT3_DIR}/INFERELATOR3.ext3.gz
+cd ${BASEDIR}; singularity exec --overlay ${EXT3_DIR}/INFERELATOR3.ext3 ${SIF_DIR}/INFERELATOR3.sif \
+			   /bin/sh -c "
+sh ${CONDA_DIR}/Miniconda3-py37_4.10.3-Linux-x86_64.sh -b -p /ext3/miniconda3
+cp ${CONDA_DIR}/overlay_ext3_mc3.sh /ext3/env.sh
+source /ext3/env.sh
+conda update -n base conda -y
+conda clean --all --yes
+conda install -c conda-forge mamba
+conda create -y --name INFERELATOR3 python=3.7
+conda activate INFERELATOR3
+python -m pip install inferelator
+python -m pip install joblib
+python -m pip install dask[complete] dask_jobqueue
+"
+echo "Singularity files for INFERELATOR3: image is ${SIF_DIR}/INFERELATOR3.sif, overlay is ${EXT3_DIR}/INFERRELATOR3.ext3"
+
