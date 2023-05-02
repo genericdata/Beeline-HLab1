@@ -172,7 +172,7 @@ class ConfigParser(object):
         algorithm_list = []
         for algorithm in algorithms_all:
             # if subset was specified, change each should_run to True and others to False
-            # if subset was not specified, just add the original algorithm seeting
+            # if subset was not specified, just add the original algorithm setting
             if (len(algorithms_select)>0):
                 if (algorithm['name'] in algorithms_select):
                     algorithm['params']['should_run'] = [True]
