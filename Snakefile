@@ -307,6 +307,7 @@ rule beeline_exp_deepdrim7_pairs:
         /bin/bash -c \"source /ext3/env.sh; conda activate DEEPDRIM; cd {params.D}; \
                        command time -v -o time_generate_pairs.txt python /scratch/ch153/packages/DeepDRIM/hlab1/DeepDRIM/generate_pairs_cictpairs2.py -expr_file ExpressionData.csv -cict_pair_file cictLearn.csv -label {params.label} -random_state {params.random_state} > training_pairsDEEPDRIM7.log 2>&1 \"
    """
+# python /scratch/ch153/packages/DeepDRIM/hlab1/DeepDRIM/generate_pairs_cictpairs2.py usess the package code in /scratch/ch153/packages/DeepDRIM/hlab1/DeepDRIM/
 rule beeline_exp_deepdrim7_pairs_out:
    input: expand('inputs_beeline2/{ds.exp_dir}/{ds.dataset}/DEEPDRIM7/training_pairsDEEPDRIM7.txt',\
                  ds=EXP_PARAM_DF.groupby(['exp_dir','dataset']).count().reset_index().itertuples())
@@ -1146,12 +1147,12 @@ def get_eval_mem_mb(wildcards):
 
 def get_eval_time(wildcards):
     switcher = {
-        "L0": "4:00:00",
-        "L1": "4:00:00",
-        "L2": "4:00:00",
-        "L0_ns": "4:00:00",
-        "L1_ns": "4:00:00",
-        "L2_ns": "4:00:00",
+        "L0": "1:00:00",
+        "L1": "1:00:00",
+        "L2": "1:00:00",
+        "L0_ns": "1:00:00",
+        "L1_ns": "1:00:00",
+        "L2_ns": "1:00:00",
         "L0_lofgof": "4:00:00",
         "L1_lofgof": "4:00:00",
         "L2_lofgof": "4:00:00",
@@ -1163,7 +1164,7 @@ def get_eval_time(wildcards):
     return switcher.get(wildcards.exp_dir, "03:00:00")
 
 def beeline_eval_input(wildcards):
-    netout = 'outputs/{exp_dir}/{dataset}/{algorithm}/{run_i}/rankedEdges.csv'.format(**wildcards)
+    netout = 'outputs/{exp_dir}/{dataset}/{algorithm}/{run_i}rankedEdges.csv'.format(**wildcards)
     if (os.path.exists(netout)):
         return netout
     else:
@@ -1171,8 +1172,8 @@ def beeline_eval_input(wildcards):
     
 rule beeline_eval:
     input: netout=beeline_eval_input
-    output: 'outputs_eval/{exp_dir}/{dataset}/{algorithm}/{run_i,(run_[0-9]+)?}/{exp_dir}-{metric}.out'
-    log: 'outputs_eval/{exp_dir}/{dataset}/{algorithm}/{run_i}/{exp_dir}-{metric}.log'
+    output: 'outputs_eval/{exp_dir}/{dataset}/{algorithm}/{run_i,(run_[0-9]+)/|.*}{exp_dir}-{metric}.out'
+    log: 'outputs_eval/{exp_dir}/{dataset}/{algorithm}/{run_i}{exp_dir}-{metric}.log'
     params: config='config-files-split/config_{exp_dir}_split/{dataset}/{algorithm}/{run_i}/config.yaml',\
             overlay="conda_greene/overlay-5GB-200K-beeline20211104.ext3",\
             sif="conda_greene/centos-8.2.2004.sif",\
@@ -1197,17 +1198,17 @@ rule beeline_eval:
 rule beeline_eval_out:
    input: expand('outputs_eval/{exp_dir}/{dataset}/{algorithm}/{exp_dir}-{metric}.out',\
                  exp_dir=['L0','L1','L2'],\
-                 dataset=DATASET_PARAMS['ns']['dataset'],\
-                 algorithm=['CICT'],\
-                 metric=['epr','auc','auc3','auc4','pauc4'])
+                 dataset=DATASET_PARAMS['cs']['dataset'],\
+                 algorithm=['CICT_v2'],\
+                 metric=['epr','auc3','auc4','pauc4'])
 #                 algorithm=[alg for alg in ALGORITHMS if alg not in ['DEEPDRIM','DEEPDRIM5','DEEPDRIM6','GRNVBEM']],\
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_eval_out
 rule beeline_eval_ns_out:
    input: expand('outputs_eval/{exp_dir}/{dataset}/{algorithm}/{exp_dir}-{metric}.out',\
                  exp_dir=['L0_ns','L1_ns','L2_ns'],\
                  dataset=DATASET_PARAMS['ns']['dataset'],\
-                 algorithm=['DEEPDRIM7'],\
-                 metric=['epr','auc','auc3','auc4','pauc4'])
+                 algorithm=['CICT_v2'],\
+                 metric=['epr','auc3','auc4','pauc4'])
 #                 algorithm=[alg for alg in ALGORITHMS if alg not in ['DEEPDRIM','DEEPDRIM5','GRNVBEM']],\
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_eval_ns_out
 rule beeline_eval_ns_out2:
@@ -1216,7 +1217,7 @@ rule beeline_eval_lofgof_out:
    input: expand('outputs_eval/{exp_dir}/{dataset}/{algorithm}/{exp_dir}-{metric}.out',\
                  exp_dir=['L0_lofgof','L1_lofgof','L2_lofgof'],\
                  dataset=DATASET_PARAMS['lofgof']['dataset'],\
-                 algorithm=['DEEPDRIM7'],\
+                 algorithm=['CICT_v2'],\
                  metric=['epr','auc3','auc4','pauc4']) +
           expand('outputs_eval/{exp_dir}/{dataset}/{algorithm}/run_{train_i}/{exp_dir}-{metric}.out',\
                  exp_dir=['L2_lofgof'],\
