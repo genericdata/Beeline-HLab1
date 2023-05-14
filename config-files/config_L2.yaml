@@ -87,6 +87,18 @@ input_settings:
               fp.fn.cost: [1/5]  #False positive to False Negative cost ratio for threshold identification
 
 
+        - name: "CICT_v2"
+          params: 
+              should_run: [True]
+              groundTruth: ['refNetwork.csv']
+              edgeTypes: ['ewMImm,ewMIempirical, Pearson,Euclidean,Granger']  #  ewMImm,ewMIempirical, efMIshrink,ewMIshrink , efMImm,efMIempirical, Pearson,Kendall,Spearman, Euclidean,Granger,L10NormManhattan,
+              supervised.positiveClass: ['c,rc']  # c:causal edges, 'c,rc': causal and reversecausal
+              supervised.negativeClass: ['r']  # r:random edges, 'rc': reversecausal
+              supervised.gtProp: [.2] #proportion of GT used for classification
+              supervised.train: [.3] #proportion of classification records used for training
+              fp.fn.cost: [1/5]  #False positive to False Negative cost ratio for threshold identification
+
+
         - name: "CNNC"
           params: 
               should_run: [True]
@@ -122,6 +134,90 @@ input_settings:
               should_run: [True]
               useGPU: [True]
               numBatches: [20]
+
+
+        - name: "INFERELATOR31"
+          params: 
+              should_run: [True]
+              regulators: ['ExpressionData-Genes.tsv']
+              useGS: ['refNetwork.tsv']
+              usePrior: ['False']
+              method: ['bbsr']
+              workflow: ['tfa']
+              splitGSForCV: ['False']
+              CVSplitRatio: ['None']
+              randomSeed: ['100']
+              numBootstraps: ['50']
+
+
+        - name: "INFERELATOR32"
+          params: 
+              should_run: [True]
+              regulators: ['ExpressionData-Genes.tsv']
+              useGS: ['refNetwork.tsv']
+              usePrior: ['cictPositive.tsv']
+              method: ['bbsr']
+              workflow: ['tfa']
+              splitGSForCV: ['False']
+              CVSplitRatio: ['None']
+              randomSeed: ['100']
+              numBootstraps: ['50']
+
+
+        - name: "INFERELATOR33"
+          params: 
+              should_run: [True]
+              regulators: ['ExpressionData-Genes.tsv']
+              useGS: ['refNetwork.tsv']
+              usePrior: ['refNetwork.tsv']
+              method: ['bbsr']
+              workflow: ['tfa']
+              splitGSForCV: ['False']
+              CVSplitRatio: ['None']
+              randomSeed: ['100']
+              numBootstraps: ['50']
+
+
+        - name: "INFERELATOR34"
+          params: 
+              should_run: [True]
+              regulators: ['ExpressionData-Genes.tsv']
+              useGS: ['False']
+              usePrior: ['False']
+              method: ['bbsr']
+              workflow: ['tfa']
+              splitGSForCV: ['False']
+              CVSplitRatio: ['None']
+              randomSeed: ['100']
+              numBootstraps: ['50']
+
+
+        - name: "INFERELATOR35"
+          params: 
+              should_run: [True]
+              regulators: ['ExpressionData-Genes.tsv']
+              useGS: ['False']
+              usePrior: ['cictPositive.tsv']
+              method: ['bbsr']
+              workflow: ['tfa']
+              splitGSForCV: ['False']
+              CVSplitRatio: ['None']
+              randomSeed: ['100']
+              numBootstraps: ['50']
+
+
+        - name: "INFERELATOR36"
+          params: 
+              should_run: [True]
+              regulators: ['ExpressionData-Genes.tsv']
+              useGS: ['False']
+              usePrior: ['refNetwork.tsv']
+              method: ['bbsr']
+              workflow: ['tfa']
+              splitGSForCV: ['False']
+              CVSplitRatio: ['None']
+              randomSeed: ['100']
+              numBootstraps: ['50']
 
 
         - name: "PIDC"
