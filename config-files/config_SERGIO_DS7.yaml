@@ -237,6 +237,90 @@ input_settings:
               numBatches: [10]
 
 
+        - name: "INFERELATOR31"
+          params: 
+              should_run: [True]
+              regulators: ['ExpressionData-Genes.tsv']
+              useGS: ['refNetwork.tsv']
+              usePrior: ['False']
+              method: ['bbsr']
+              workflow: ['tfa']
+              splitGSForCV: ['False']
+              CVSplitRatio: ['None']
+              randomSeed: ['100']
+              numBootstraps: ['50']
+
+
+        - name: "INFERELATOR32"
+          params: 
+              should_run: [True]
+              regulators: ['ExpressionData-Genes.tsv']
+              useGS: ['refNetwork.tsv']
+              usePrior: ['cictPositive.tsv']
+              method: ['bbsr']
+              workflow: ['tfa']
+              splitGSForCV: ['False']
+              CVSplitRatio: ['None']
+              randomSeed: ['100']
+              numBootstraps: ['50']
+
+
+        - name: "INFERELATOR33"
+          params: 
+              should_run: [True]
+              regulators: ['ExpressionData-Genes.tsv']
+              useGS: ['refNetwork.tsv']
+              usePrior: ['refNetwork.tsv']
+              method: ['bbsr']
+              workflow: ['tfa']
+              splitGSForCV: ['False']
+              CVSplitRatio: ['None']
+              randomSeed: ['100']
+              numBootstraps: ['50']
+
+
+        - name: "INFERELATOR34"
+          params: 
+              should_run: [True]
+              regulators: ['ExpressionData-Genes.tsv']
+              useGS: ['False']
+              usePrior: ['False']
+              method: ['bbsr']
+              workflow: ['tfa']
+              splitGSForCV: ['False']
+              CVSplitRatio: ['None']
+              randomSeed: ['100']
+              numBootstraps: ['50']
+
+
+        - name: "INFERELATOR35"
+          params: 
+              should_run: [True]
+              regulators: ['ExpressionData-Genes.tsv']
+              useGS: ['False']
+              usePrior: ['cictPositive.tsv']
+              method: ['bbsr']
+              workflow: ['tfa']
+              splitGSForCV: ['False']
+              CVSplitRatio: ['None']
+              randomSeed: ['100']
+              numBootstraps: ['50']
+
+
+        - name: "INFERELATOR36"
+          params: 
+              should_run: [True]
+              regulators: ['ExpressionData-Genes.tsv']
+              useGS: ['False']
+              usePrior: ['refNetwork.tsv']
+              method: ['bbsr']
+              workflow: ['tfa']
+              splitGSForCV: ['False']
+              CVSplitRatio: ['None']
+              randomSeed: ['100']
+              numBootstraps: ['50']
+
+
         - name: "PIDC"
           params: 
               should_run: [True]
