@@ -48,7 +48,11 @@ InputMapper = {'SCODE':SCODE.generateInputs,
                'DEEPDRIM8':DEEPDRIM8.generateInputs,
                'CNNC':CNNC.generateInputs,
                'INFERELATOR31':INFERELATOR3.generateInputs,
-               'INFERELATOR32':INFERELATOR3.generateInputs}
+               'INFERELATOR32':INFERELATOR3.generateInputs,
+               'INFERELATOR33':INFERELATOR3.generateInputs,
+               'INFERELATOR34':INFERELATOR3.generateInputs,
+               'INFERELATOR35':INFERELATOR3.generateInputs,
+               'INFERELATOR36':INFERELATOR3.generateInputs}
 
 
 
@@ -77,7 +81,11 @@ AlgorithmMapper = {'SCODE':SCODE.run,
             'DEEPDRIM8':DEEPDRIM8.run,
             'CNNC':CNNC.run,
             'INFERELATOR31':INFERELATOR3.run,
-            'INFERELATOR32':INFERELATOR3.run}
+            'INFERELATOR32':INFERELATOR3.run,
+            'INFERELATOR33':INFERELATOR3.run,
+            'INFERELATOR34':INFERELATOR3.run,
+            'INFERELATOR35':INFERELATOR3.run,
+            'INFERELATOR36':INFERELATOR3.run}
 
 
 
@@ -102,11 +110,14 @@ OutputParser = {'SCODE':SCODE.parseOutput,
             'DEEPDRIM5':DEEPDRIM5.parseOutput,
             'DEEPDRIM6':DEEPDRIM6.parseOutput,
             'DEEPDRIM7':DEEPDRIM7.parseOutput,
-            'DEEPDRIM7':DEEPDRIM8.parseOutput,
             'DEEPDRIM8':DEEPDRIM8.parseOutput,
             'CNNC':CNNC.parseOutput,
             'INFERELATOR31':INFERELATOR3.parseOutput,
-            'INFERELATOR31':INFERELATOR3.parseOutput}
+            'INFERELATOR32':INFERELATOR3.parseOutput,
+            'INFERELATOR33':INFERELATOR3.parseOutput,
+            'INFERELATOR34':INFERELATOR3.parseOutput,
+            'INFERELATOR35':INFERELATOR3.parseOutput,
+            'INFERELATOR36':INFERELATOR3.parseOutput}
 
 
 
