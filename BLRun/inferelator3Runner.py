@@ -22,7 +22,7 @@ def generateInputs(RunnerObj):
 
     # reformat the true edges file to adj matrix
     print('Gold standard edges: ',RunnerObj.params['useGS'] if RunnerObj.params['useGS']=='False' else str(RunnerObj.inputDir.joinpath(algName,runDir,RunnerObj.params['useGS'])))
-    if (RunnerObj.params['useGS']!='False') and (not RunnerObj.inputDir.joinpath(algName,runDir,"gold_standard.tsv").exists()):
+    if (RunnerObj.params['useGS']!='False'):
         gold_standard = pd.read_csv(RunnerObj.inputDir.joinpath(algName,runDir,RunnerObj.params['useGS']),sep='\t')
         gold_standard['Type'] = gold_standard.get('Type',1)# some refNetworks.csv file do not have the type column
         gold_standard = gold_standard.drop_duplicates(subset=['Gene1','Gene2','Type']).pivot(index="Gene2", columns="Gene1", values="Type")
@@ -34,7 +34,7 @@ def generateInputs(RunnerObj):
 
     # reformat priors to adj matrix
     print('Prior edges: ',RunnerObj.params['usePrior'] if RunnerObj.params['usePrior']=='False' else str(RunnerObj.inputDir.joinpath(algName,runDir,RunnerObj.params['usePrior'])))
-    if (RunnerObj.params['usePrior']!='False') and (not RunnerObj.inputDir.joinpath(algName,runDir,"priors.tsv").exists()):
+    if (RunnerObj.params['usePrior']!='False'):
         priors = pd.read_csv(RunnerObj.inputDir.joinpath(algName,runDir,RunnerObj.params['usePrior']),sep='\t')
         priors['Type'] = priors.get('Type',1)
         priors = priors.drop_duplicates(subset=['Gene1','Gene2','Type']).pivot(index="Gene2", columns="Gene1", values="Type")

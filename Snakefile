@@ -23,6 +23,7 @@ SERGIO_DATASETS_DIR='/scratch/ch153/packages/SERGIO/PayamDiba/SERGIO/data_sets'
 
 ALGORITHMS = ['CICT','CICT_v2','DEEPDRIM','DEEPDRIM5','DEEPDRIM6','DEEPDRIM7',
               'INFERELATOR31','INFERELATOR32','INFERELATOR33','INFERELATOR34','INFERELATOR35','INFERELATOR36',
+              'INFERELATOR38',
               'GENIE3','GRISLI',
               'GRNBOOST2','GRNVBEM',
               'LEAP','PIDC','PPCOR','RANDOM','SCNS','SCODE','SCRIBE',
@@ -433,7 +434,9 @@ rule beeline_exp_inferelator3X_input:
           netfile_cicttest="{exp_input_dir}/{exp_dir}/{dataset}/cictTest.csv"
    output: regout="{exp_input_dir}/{exp_dir}/{dataset}/{inf3_version,INFERELATOR3[0-9]+}/ExpressionData-Genes.tsv",\
            netout="{exp_input_dir}/{exp_dir}/{dataset}/{inf3_version,INFERELATOR3[0-9]+}/refNetwork.tsv",\
-           netout_prior="{exp_input_dir}/{exp_dir}/{dataset}/{inf3_version,INFERELATOR3[0-9]+}/cictPositive.tsv"
+           netout_prior="{exp_input_dir}/{exp_dir}/{dataset}/{inf3_version,INFERELATOR3[0-9]+}/cictPositive.tsv",\
+           netout_prior2="{exp_input_dir}/{exp_dir}/{dataset}/{inf3_version,INFERELATOR3[0-9]+}/cictTrainPositive.tsv"
+#   output: netout_prior2="{exp_input_dir}/{exp_dir}/{dataset}/{inf3_version,INFERELATOR3[0-9]+}/cictTrainPositive.tsv" 
    log: "{exp_input_dir}/{exp_dir}/{dataset}/{inf3_version}/ExpressionData-Genes.log"
    params: overlay="images_singularity_overlay/INFERELATOR3.ext3",\
            sif="images_singularity/INFERELATOR3.sif",\
@@ -446,10 +449,11 @@ rule beeline_exp_inferelator3X_input:
      awk -v FS=',' -v OFS='\\t' '{{ if (NR>1) {{ print $1 }} }}' {input.expfile} | sort -u > {output.regout}
      awk -v FS=',' -v OFS='\\t' '{{ $1=$1; print $0 }}' {input.netfile} > {output.netout}
      awk -v FS='\\t' -v OFS='\\t' '{{ if (NR==1) {{ print $0 }} else if ($3==\"TRUE\") {{ print $0 }} }}' {input.netfile_cicttrain} {input.netfile_cicttest} > {output.netout_prior}
+     awk -v FS='\\t' -v OFS='\\t' '{{ if (NR==1) {{ print $0 }} else if ($3==\"TRUE\") {{ print $0 }} }}' {input.netfile_cicttrain} > {output.netout_prior2}
    """
 rule beeline_exp_inferelator3X_input_out:
-   input: expand('inputs_beeline2/{ds.exp_dir}/{ds.dataset}/{inf3_version}/ExpressionData-Genes.tsv',\
-                 inf3_version=['INFERELATOR31','INFERELATOR32','INFERELATOR33','INFERELATOR34','INFERELATOR35','INFERELATOR36'],\
+   input: expand('inputs_beeline2/{ds.exp_dir}/{ds.dataset}/{inf3_version}/cictTrainPositive.tsv',\
+                 inf3_version=['INFERELATOR31','INFERELATOR32','INFERELATOR33','INFERELATOR34','INFERELATOR35','INFERELATOR36','INFERELATOR37','INFERELATOR38'],\
                  ds=EXP_PARAM_DF.groupby(['exp_dir','dataset']).count().reset_index().itertuples())
 
 ### SERGIO data from github
@@ -1102,28 +1106,28 @@ def get_run_mem_mb(wildcards):
         "L0_lofgof": 16000,
         "L1_lofgof": 16000,
         "L2_lofgof": 16000,
-        "SERGIO_DS4":32000,
-        "SERGIO_DS5":32000,
-        "SERGIO_DS6":32000,
-        "SERGIO_DS7":32000
+        "SERGIO_DS4":16000,
+        "SERGIO_DS5":16000,
+        "SERGIO_DS6":16000,
+        "SERGIO_DS7":16000
         }
     return switcher.get(wildcards.exp_dir, 8000)
 
 def get_run_time(wildcards):
     switcher = {
-        "L0": "4:00:00",
-        "L1": "4:00:00",
-        "L2": "4:00:00",
+        "L0": "8:00:00",
+        "L1": "8:00:00",
+        "L2": "8:00:00",
         "L0_ns": "8:00:00",
         "L1_ns": "8:00:00",
         "L2_ns": "8:00:00",
         "L0_lofgof": "8:00:00",
         "L1_lofgof": "8:00:00",
         "L2_lofgof": "8:00:00",
-        "SERGIO_DS4": "16:00:00",
-        "SERGIO_DS5": "16:00:00",
-        "SERGIO_DS6": "16:00:00",
-        "SERGIO_DS7": "16:00:00"
+        "SERGIO_DS4": "0:20:00",
+        "SERGIO_DS5": "0:20:00",
+        "SERGIO_DS6": "0:20:00",
+        "SERGIO_DS7": "0:20:00"
         }
     return switcher.get(wildcards.exp_dir, "03:00:00")
 
@@ -1169,7 +1173,7 @@ rule beeline_run:#\\b(?!CICT).*\\b matches anything that does not start with CIC
 
 rule beeline_run_out:
    input: expand('outputs/{exp_dir}/{dataset}/{algorithm}/rankedEdges.csv',\
-                 exp_dir=['L0','L1','L2'],\
+                 exp_dir=['L2'],\
                  dataset=DATASET_PARAMS['cs']['dataset'],\
                  algorithm=[alg for alg in ALGORITHMS if alg not in ['CICT','CICT_v2','DEEPDRIM','DEEPDRIM5','DEEPDRIM6','SCNS','GRNVBEM','PPCOR','SINCERITIES']])
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_run_out
@@ -1204,6 +1208,17 @@ rule beeline_run_sergio_out:
                  algorithm=[alg for alg in ALGORITHMS if alg not in ['CICT','CICT_v2','DEEPDRIM','DEEPDRIM5','DEEPDRIM6','SINCERITIES','PIDC']])
                  #algorithm=['INFERELATOR31','INFERELATOR32'])
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_run_sergio_out
+rule beeline_run_sergio2_out:
+   input: expand('outputs/{exp_dir}/net{network_i}/{algorithm}/rankedEdges.csv',\
+                 exp_dir=['SERGIO_DS4','SERGIO_DS5','SERGIO_DS6','SERGIO_DS7'],\
+                 network_i=range(15),\
+                 algorithm=['INFERELATOR31','INFERELATOR32']) +\
+          expand('outputs/{exp_dir}/net{network_i}/{algorithm}/rankedEdges.csv',\
+                 exp_dir=['SERGIO_DS4','SERGIO_DS5','SERGIO_DS6','SERGIO_DS7'],\
+                 network_i=[str(i)+'_sh6.5_perc80' for i in range(15)],\
+                 algorithm=['INFERELATOR31','INFERELATOR32'])
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_run_sergio2_out
+
 
 def get_eval_mem_mb(wildcards):
     switcher = {
@@ -1288,7 +1303,7 @@ rule beeline_eval_lofgof_out:
    input: expand('outputs_eval/{exp_dir}/{dataset}/{algorithm}/{exp_dir}-{metric}.out',\
                  exp_dir=['L0_lofgof','L1_lofgof','L2_lofgof'],\
                  dataset=DATASET_PARAMS['lofgof']['dataset'],\
-                 algorithm=[alg for alg in ALGORITHMS if alg not in ['DEEPDRIM','DEEPDRIM5','DEEPDRIM6','SCNS']],\
+                 algorithm=[alg for alg in ALGORITHMS if alg not in ['DEEPDRIM','DEEPDRIM5','DEEPDRIM6','SCNS','GRNVBEM']],\
                  metric=['epr','auc3','auc4','pauc4']) 
 #          expand('outputs_eval/{exp_dir}/{dataset}/{algorithm}/run_{train_i}/{exp_dir}-{metric}.out',\
 #                 exp_dir=['L2_lofgof'],\
@@ -1308,12 +1323,12 @@ rule beeline_eval_sergio_out:
    input: expand('outputs_eval/{exp_dir}/net{network_i}/{algorithm}/{exp_dir}-{metric}.out',\
                  exp_dir=['SERGIO_DS4','SERGIO_DS5','SERGIO_DS6','SERGIO_DS7'],\
                  network_i=range(15),\
-                 algorithm=[alg for alg in ALGORITHMS if alg not in ['CICT_v2','DEEPDRIM','DEEPDRIM5','DEEPDRIM6','SCNS']],\
+                 algorithm=[alg for alg in ALGORITHMS if alg not in ['CICT_v2','DEEPDRIM','DEEPDRIM5','DEEPDRIM6']],\
                  metric=['epr','auc','auc3','auc4','pauc4'])+\
           expand('outputs_eval/{exp_dir}/net{network_i}/{algorithm}/{exp_dir}-{metric}.out',\
                  exp_dir=['SERGIO_DS4','SERGIO_DS5','SERGIO_DS6','SERGIO_DS7'],\
                  network_i=[str(i)+'_sh6.5_perc80' for i in range(15)],\
-                 algorithm=[alg for alg in ALGORITHMS if alg not in ['CICT_v2','DEEPDRIM','DEEPDRIM5','DEEPDRIM6','PIDC','SINCERITIES','SCNS']],\
+                 algorithm=[alg for alg in ALGORITHMS if alg not in ['CICT_v2','DEEPDRIM','DEEPDRIM5','DEEPDRIM6','SCNS']],\
                  metric=['epr','auc','auc3','auc4','pauc4'])
                  #algorithm=[alg for alg in ALGORITHMS if alg not in ['DEEPDRIM','DEEPDRIM5']],\
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_eval_sergio_out
