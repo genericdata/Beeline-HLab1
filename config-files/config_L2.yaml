@@ -220,6 +220,34 @@ input_settings:
               numBootstraps: ['50']
 
 
+        - name: "INFERELATOR37"
+          params: 
+              should_run: [True]
+              regulators: ['ExpressionData-Genes.tsv']
+              useGS: ['refNetwork.tsv']
+              usePrior: ['cictTrainPositive.tsv']
+              method: ['bbsr']
+              workflow: ['tfa']
+              splitGSForCV: ['False']
+              CVSplitRatio: ['None']
+              randomSeed: ['100']
+              numBootstraps: ['50']
+
+
+        - name: "INFERELATOR38"
+          params: 
+              should_run: [True]
+              regulators: ['ExpressionData-Genes.tsv']
+              useGS: ['False']
+              usePrior: ['cictTrainPositive.tsv']
+              method: ['bbsr']
+              workflow: ['tfa']
+              splitGSForCV: ['False']
+              CVSplitRatio: ['None']
+              randomSeed: ['100']
+              numBootstraps: ['50']
+
+
         - name: "PIDC"
           params: 
               should_run: [True]

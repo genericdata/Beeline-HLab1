@@ -52,7 +52,9 @@ InputMapper = {'SCODE':SCODE.generateInputs,
                'INFERELATOR33':INFERELATOR3.generateInputs,
                'INFERELATOR34':INFERELATOR3.generateInputs,
                'INFERELATOR35':INFERELATOR3.generateInputs,
-               'INFERELATOR36':INFERELATOR3.generateInputs}
+               'INFERELATOR36':INFERELATOR3.generateInputs,
+               'INFERELATOR37':INFERELATOR3.generateInputs,
+               'INFERELATOR38':INFERELATOR3.generateInputs}}
 
 
 
@@ -85,7 +87,9 @@ AlgorithmMapper = {'SCODE':SCODE.run,
             'INFERELATOR33':INFERELATOR3.run,
             'INFERELATOR34':INFERELATOR3.run,
             'INFERELATOR35':INFERELATOR3.run,
-            'INFERELATOR36':INFERELATOR3.run}
+            'INFERELATOR36':INFERELATOR3.run,
+            'INFERELATOR37':INFERELATOR3.run,
+            'INFERELATOR38':INFERELATOR3.run}
 
 
 
@@ -117,7 +121,10 @@ OutputParser = {'SCODE':SCODE.parseOutput,
             'INFERELATOR33':INFERELATOR3.parseOutput,
             'INFERELATOR34':INFERELATOR3.parseOutput,
             'INFERELATOR35':INFERELATOR3.parseOutput,
-            'INFERELATOR36':INFERELATOR3.parseOutput}
+            'INFERELATOR36':INFERELATOR3.parseOutput,
+            'INFERELATOR37':INFERELATOR3.parseOutput,
+            'INFERELATOR38':INFERELATOR3.parseOutput}
+
 
 
 

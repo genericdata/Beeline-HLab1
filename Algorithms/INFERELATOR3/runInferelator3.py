@@ -25,14 +25,6 @@ def setup_workflow(method, wkf, in_dir, expr_file, tf_file, out_dir):
     
     return worker
 
-def get_median_scores(wkf):
-    cv = crossvalidation_workflow.CrossValidationManager(wkf)
-    cv.add_gridsearch_parameter('random_seed', list(range(42, 52)))
-    res = cv.run()
-    medians = [np.median([result[1].all_scores[n] for result in res]) for n in res[0][1].all_names]
-    print(dict(zip(res[0][1].all_names, medians)))
-    return medians
-
 def parseArgs(args):
     parser = OptionParser()
 
@@ -47,15 +39,15 @@ def parseArgs(args):
     parser.add_option('', '--expr_file',type='str',
                       help='File name of expression matrix file')
     parser.add_option('', '--gs_file',type='str',
-                      help='File name of gold standard adjacency matrix')
+                      help='File name of gold standard adjacency matrix. Do not specify this option to use no gold standard')
     parser.add_option('', '--regulator_file',type='str',
                       help='File name of regulator names')
     parser.add_option('', '--priors_file',type='str',
-                      help='File name of prior interaction adjacency matrix; Do not specify this to use no priors')
+                      help='File name of prior interaction adjacency matrix. Do not specify this to use no priors')
     parser.add_option('', '--split_gs_for_cv',type='str',default='True',
                       help='split_gold_standard_for_crossvalidation')
     parser.add_option('', '--cv_split_ratio',type='str',default='None',
-                      help='CV split ratio')
+                      help='CV split ratio. Ignored when --split_gs_for_cv is set to False.')
     parser.add_option('', '--random_seed',type='int',default=100,
                       help='random seed')
     parser.add_option('', '--num_bootstraps',type='int',default=5,
@@ -71,17 +63,19 @@ def main(args):
 
     MPControl.set_multiprocess_engine("local")
     MPControl.connect()
-    utils.Debug.set_verbose_level(0)
+    utils.Debug.set_verbose_level(1)
     warnings.simplefilter("ignore")
     
     worker = setup_workflow(opts.method, opts.workflow, opts.in_dir,
                             opts.expr_file, opts.regulator_file, opts.out_dir)
     if (opts.gs_file is None):
         worker.set_network_data_flags(use_no_gold_standard=True)
+        worker.set_file_paths(gold_standard_file=None)
     else:
         worker.set_file_paths(gold_standard_file=opts.gs_file)
     if (opts.priors_file is None):
         worker.set_network_data_flags(use_no_prior=True)
+        worker.set_file_paths(priors_file=None)
     else:
         worker.set_file_paths(priors_file=opts.priors_file)
 
