@@ -21,9 +21,11 @@ SERGIO_DATASETS_DIR='/scratch/ch153/packages/SERGIO/PayamDiba/SERGIO/data_sets'
 #DATASET_DIRS_NS = ['L0_ns','L1_ns','L2_ns']
 #DATASET_DIRS_LOFGOF = ['L0_lofgof','L1_lofgof','L2_lofgof']
 
-ALGORITHMS = ['CICT','CICT_v2','DEEPDRIM','DEEPDRIM5','DEEPDRIM6','DEEPDRIM7',
-              'INFERELATOR31','INFERELATOR32','INFERELATOR33','INFERELATOR34','INFERELATOR35','INFERELATOR36',
-              'INFERELATOR38',
+ALGORITHMS = ['CICT','CICT_v2','CICT_v2.back','DEEPDRIM','DEEPDRIM5','DEEPDRIM6','DEEPDRIM7',
+              'INFERELATOR31','INFERELATOR32','INFERELATOR33','INFERELATOR34',
+              'INFERELATOR35','INFERELATOR36','INFERELATOR38',
+              'INFERELATOR31_v2','INFERELATOR32_v2','INFERELATOR33_v2','INFERELATOR34_v2',
+              'INFERELATOR35_v2','INFERELATOR36_v2','INFERELATOR37_v2','INFERELATOR38_v2',
               'GENIE3','GRISLI',
               'GRNBOOST2','GRNVBEM',
               'LEAP','PIDC','PPCOR','RANDOM','SCNS','SCODE','SCRIBE',
@@ -144,7 +146,7 @@ rule beeline_exp_tfs_out:
    input: expand('inputs_beeline2/{ds.exp_dir}/{ds.dataset}/{ds.exp_dir}-ExpressionData-TFs.csv',\
                  ds=EXP_PARAM_DF.itertuples())
 
-# Generate pairs data for DEEPDRIM using L0/L1/L2 CICT training datasets
+# Copy CICT training and test pairs
 rule beeline_exp_cictpairs:
    input: netfile_train='outputs/{exp_dir}/{dataset}/CICT/train.csv',\
           netfile_test='outputs/{exp_dir}/{dataset}/CICT/test.csv'
@@ -159,7 +161,22 @@ rule beeline_exp_cictpairs_out:
                  train_test=['Train','Test'],\
                  ds=EXP_PARAM_DF.groupby(['exp_dir','dataset']).count().reset_index().itertuples())
 
-# rsync -Pavz /scratch/as15096/eric/outputs/L2_lofgof/mESC/mESC_lofgof_training_sets/ /scratch/ch153/packages/BEELINE/hlab1/Beeline/outputs_cict_learn/L2_lofgof/mESC
+rule beeline_exp_cictpairs_version:
+   input: netfile_train='outputs/{exp_dir}/{dataset}/CICT_{cict_version}/train.csv',\
+          netfile_test='outputs/{exp_dir}/{dataset}/CICT_{cict_version}/test.csv'
+   output: netout_train='{exp_input_dir}/{exp_dir}/{dataset}/CICT_{cict_version}/cictTrain.csv',\
+           netout_test='{exp_input_dir}/{exp_dir}/{dataset}/CICT_{cict_version}/cictTest.csv'
+   shell: """
+        cp {input.netfile_train} {output.netout_train}
+        cp {input.netfile_test} {output.netout_test}
+   """
+rule beeline_exp_cictpairs_version_out:
+   input: expand('inputs_beeline2/{ds.exp_dir}/{ds.dataset}/CICT_{cict_version}/cict{train_test}.csv',\
+                 cict_version=['v2'],\
+                 train_test=['Train','Test'],\
+                 ds=EXP_PARAM_DF.groupby(['exp_dir','dataset']).count().reset_index().itertuples())
+   
+# For L2_lofgof only; rsync -Pavz /scratch/as15096/eric/outputs/L2_lofgof/mESC/mESC_lofgof_training_sets/ /scratch/ch153/packages/BEELINE/hlab1/Beeline/outputs_cict_learn/L2_lofgof/mESC
 rule beeline_exp_cictpairs_multi:
    input: netfile_train='outputs_cict_learn/{exp_dir}/{dataset}/{train_i}/training.csv',\
           netfile_test='outputs_cict_learn/{exp_dir}/{dataset}/{train_i}/test.csv'
@@ -176,7 +193,6 @@ rule beeline_exp_cictpairs_multi_out:
                  ds=EXP_PARAM_DF[(EXP_PARAM_DF.exp_dir=='L2_lofgof') & (EXP_PARAM_DF.dataset=='mESC')].groupby(['exp_dir','dataset']).count().reset_index().itertuples())
 rule beeline_exp_cictpairs_multi_out2:
     shell: "echo {rules.beeline_exp_cictpairs_multi_out.input}"
-
    
 # Generate training pairs data for DEEPDRIM using full BEELINE datasets
 rule beeline_exp_deepdrim_pairs:
@@ -319,6 +335,42 @@ rule beeline_exp_deepdrim7_pairs_out:
                  ds=EXP_PARAM_DF.groupby(['exp_dir','dataset']).count().reset_index().itertuples())
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_exp_deepdrim7_pairs_out
 
+# Generate training pairs data for DEEPDRIM7_version using L0/L1/L2 CICT_version training+testing datasets
+rule beeline_exp_deepdrim7version_pairs:
+   input: expfile='{exp_input_dir}/{exp_dir}/{dataset}/{exp_dir}-ExpressionData.csv',\
+          netfile_cicttrain="{exp_input_dir}/{exp_dir}/{dataset}/CICT_{cict_version}/cictTrain.csv",\
+          netfile_cicttest="{exp_input_dir}/{exp_dir}/{dataset}/CICT_{cict_version}/cictTest.csv"
+   output: expout="{exp_input_dir}/{exp_dir}/{dataset}/DEEPDRIM7_{cict_version}/ExpressionData.csv",\
+           netout="{exp_input_dir}/{exp_dir}/{dataset}/DEEPDRIM7_{cict_version}/cictLearn.csv",\
+           pairout="{exp_input_dir}/{exp_dir}/{dataset}/DEEPDRIM7_{cict_version}/training_pairsDEEPDRIM7_{cict_version}.txt",\
+           cvout="{exp_input_dir}/{exp_dir}/{dataset}/DEEPDRIM7_{cict_version}/training_pairsDEEPDRIM7_{cict_version}.txtCV_fold_divide.txt"
+   log: "{exp_input_dir}/{exp_dir}/{dataset}/DEEPDRIM7_{cict_version}/training_pairsDEEPDRIM7_{cict_version}.log"
+   params: overlay="images_singularity_overlay/DEEPDRIM7_{cict_version}.ext3",\
+           sif="images_singularity/DEEPDRIM7_{cict_version}.sif",\
+           D="{exp_input_dir}/{exp_dir}/{dataset}/DEEPDRIM7_{cict_version}",\
+           label='DEEPDRIM7_{cict_version}',random_state='12',\
+           jobname='blg_{dataset}_deepdrim7_{cict_version}',\
+           clog_prefix='training_pairsDEEPDRIM7_{cict_version}'
+   threads: 1
+   resources: mem_mb='16000', time='02:00:00', gpu=''
+   shell: """
+     mkdir -p {params.D}
+     cp {input.expfile} {output.expout}
+     cp {input.netfile_cicttrain} {output.netout}
+     tail -n +2 {input.netfile_cicttest} >> {output.netout}
+     singularity exec \
+        --no-home \
+        --overlay {params.overlay}:ro \
+        {params.sif} \
+        /bin/bash -c \"source /ext3/env.sh; conda activate DEEPDRIM; cd {params.D}; \
+                       command time -v -o time_generate_pairs.txt python /scratch/ch153/packages/DeepDRIM/hlab1/DeepDRIM/generate_pairs_cictpairs2.py -expr_file ExpressionData.csv -cict_pair_file cictLearn.csv -label {params.label} -random_state {params.random_state} > training_pairs{params.label}.log 2>&1 \"
+   """
+# python /scratch/ch153/packages/DeepDRIM/hlab1/DeepDRIM/generate_pairs_cictpairs2.py usess the package code in /scratch/ch153/packages/DeepDRIM/hlab1/DeepDRIM/
+rule beeline_exp_deepdrim7version_pairs_out:
+   input: expand('inputs_beeline2/{ds.exp_dir}/{ds.dataset}/DEEPDRIM7_{cict_version}/training_pairsDEEPDRIM7_{cict_version}.txt',\
+                 cict_version=['v2'],\
+                 ds=EXP_PARAM_DF.groupby(['exp_dir','dataset']).count().reset_index().itertuples())
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_exp_deepdrim7version_pairs_out
 
 # Generate training pairs data for DEEPDRIM8 using multiple sets of L2_lofgof CICT training+testing sets
 rule beeline_exp_deepdrim8_pairs:
@@ -426,21 +478,20 @@ rule beeline_exp_deepdrim8pred_pairs_out:
                  ds=EXP_PARAM_DF[(EXP_PARAM_DF.exp_dir=='L2_lofgof') & (EXP_PARAM_DF.dataset=='mESC')].groupby(['exp_dir','dataset']).count().reset_index().itertuples())
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_exp_deepdrim8pred_pairs_out
 
-# Generate input files for INFERELATOR31, INFERELATOR32 using all genes in the expression data as regulators
+# Generate input files for INFERELATOR3X using all genes in the expression data as regulators
 rule beeline_exp_inferelator3X_input:
    input: expfile='{exp_input_dir}/{exp_dir}/{dataset}/{exp_dir}-ExpressionData.csv',\
           netfile='{exp_input_dir}/{exp_dir}/{dataset}/{exp_dir}-network.csv',\
           netfile_cicttrain="{exp_input_dir}/{exp_dir}/{dataset}/cictTrain.csv",\
           netfile_cicttest="{exp_input_dir}/{exp_dir}/{dataset}/cictTest.csv"
-   output: regout="{exp_input_dir}/{exp_dir}/{dataset}/{inf3_version,INFERELATOR3[0-9]+}/ExpressionData-Genes.tsv",\
-           netout="{exp_input_dir}/{exp_dir}/{dataset}/{inf3_version,INFERELATOR3[0-9]+}/refNetwork.tsv",\
-           netout_prior="{exp_input_dir}/{exp_dir}/{dataset}/{inf3_version,INFERELATOR3[0-9]+}/cictPositive.tsv",\
-           netout_prior2="{exp_input_dir}/{exp_dir}/{dataset}/{inf3_version,INFERELATOR3[0-9]+}/cictTrainPositive.tsv"
-#   output: netout_prior2="{exp_input_dir}/{exp_dir}/{dataset}/{inf3_version,INFERELATOR3[0-9]+}/cictTrainPositive.tsv" 
-   log: "{exp_input_dir}/{exp_dir}/{dataset}/{inf3_version}/ExpressionData-Genes.log"
+   output: regout="{exp_input_dir}/{exp_dir}/{dataset}/{inf3x,INFERELATOR3[0-9]+}/ExpressionData-Genes.tsv",\
+           netout="{exp_input_dir}/{exp_dir}/{dataset}/{inf3x,INFERELATOR3[0-9]+}/refNetwork.tsv",\
+           netout_prior="{exp_input_dir}/{exp_dir}/{dataset}/{inf3x,INFERELATOR3[0-9]+}/cictPositive.tsv",\
+           netout_prior2="{exp_input_dir}/{exp_dir}/{dataset}/{inf3x,INFERELATOR3[0-9]+}/cictTrainPositive.tsv"
+   log: "{exp_input_dir}/{exp_dir}/{dataset}/{inf3x}/ExpressionData-Genes.log"
    params: overlay="images_singularity_overlay/INFERELATOR3.ext3",\
            sif="images_singularity/INFERELATOR3.sif",\
-           D="{exp_input_dir}/{exp_dir}/{dataset}/{inf3_version}",\
+           D="{exp_input_dir}/{exp_dir}/{dataset}/{inf3x}",\
            jobname='blg_{dataset}_inf3',\
            clog_prefix='ExpressionData-Genes'
    threads: 1
@@ -452,10 +503,41 @@ rule beeline_exp_inferelator3X_input:
      awk -v FS='\\t' -v OFS='\\t' '{{ if (NR==1) {{ print $0 }} else if ($3==\"TRUE\") {{ print $0 }} }}' {input.netfile_cicttrain} > {output.netout_prior2}
    """
 rule beeline_exp_inferelator3X_input_out:
-   input: expand('inputs_beeline2/{ds.exp_dir}/{ds.dataset}/{inf3_version}/cictTrainPositive.tsv',\
-                 inf3_version=['INFERELATOR31','INFERELATOR32','INFERELATOR33','INFERELATOR34','INFERELATOR35','INFERELATOR36','INFERELATOR37','INFERELATOR38'],\
+   input: expand('inputs_beeline2/{ds.exp_dir}/{ds.dataset}/{inf3x}/ExpressionData-Genes.tsv',\
+                 inf3x=['INFERELATOR31','INFERELATOR32','INFERELATOR33','INFERELATOR34','INFERELATOR35','INFERELATOR36','INFERELATOR37','INFERELATOR38'],\
                  ds=EXP_PARAM_DF.groupby(['exp_dir','dataset']).count().reset_index().itertuples())
 
+# Generate input files for INFERELATOR3X_version using all genes in the expression data as regulators and the corresponding CICT_version training and test sets
+rule beeline_exp_inferelator3X_version_input:
+   input: expfile='{exp_input_dir}/{exp_dir}/{dataset}/{exp_dir}-ExpressionData.csv',\
+          netfile='{exp_input_dir}/{exp_dir}/{dataset}/{exp_dir}-network.csv',\
+          netfile_cicttrain="{exp_input_dir}/{exp_dir}/{dataset}/CICT_{cict_version}/cictTrain.csv",\
+          netfile_cicttest="{exp_input_dir}/{exp_dir}/{dataset}/CICT_{cict_version}/cictTest.csv"
+   output: regout="{exp_input_dir}/{exp_dir}/{dataset}/{inf3x,INFERELATOR3[0-9]+}_{cict_version}/ExpressionData-Genes.tsv",\
+           netout="{exp_input_dir}/{exp_dir}/{dataset}/{inf3x,INFERELATOR3[0-9]+}_{cict_version}/refNetwork.tsv",\
+           netout_prior="{exp_input_dir}/{exp_dir}/{dataset}/{inf3x,INFERELATOR3[0-9]+}_{cict_version}/cictPositive.tsv",\
+           netout_prior2="{exp_input_dir}/{exp_dir}/{dataset}/{inf3x,INFERELATOR3[0-9]+}_{cict_version}/cictTrainPositive.tsv"
+   log: "{exp_input_dir}/{exp_dir}/{dataset}/{inf3x}_{cict_version}/ExpressionData-Genes.log"
+   params: overlay="images_singularity_overlay/INFERELATOR3_{cict_version}.ext3",\
+           sif="images_singularity/INFERELATOR3_{cict_version}.sif",\
+           D="{exp_input_dir}/{exp_dir}/{dataset}/{inf3x}_{cict_version}",\
+           jobname='blg_{dataset}_{inf3x}_{cict_version}',\
+           clog_prefix='ExpressionData-Genes'
+   threads: 1
+   shell: """
+     mkdir -p {params.D}
+     awk -v FS=',' -v OFS='\\t' '{{ if (NR>1) {{ print $1 }} }}' {input.expfile} | sort -u > {output.regout}
+     awk -v FS=',' -v OFS='\\t' '{{ $1=$1; print $0 }}' {input.netfile} > {output.netout}
+     awk -v FS='\\t' -v OFS='\\t' '{{ if (NR==1) {{ print $0 }} else if ($3==\"TRUE\") {{ print $0 }} }}' {input.netfile_cicttrain} {input.netfile_cicttest} > {output.netout_prior}
+     awk -v FS='\\t' -v OFS='\\t' '{{ if (NR==1) {{ print $0 }} else if ($3==\"TRUE\") {{ print $0 }} }}' {input.netfile_cicttrain} > {output.netout_prior2}
+   """
+rule beeline_exp_inferelator3X_version_input_out:
+   input: expand('inputs_beeline2/{ds.exp_dir}/{ds.dataset}/{inf3x}_{cict_version}/ExpressionData-Genes.tsv',\
+                 inf3x=['INFERELATOR31','INFERELATOR32','INFERELATOR33','INFERELATOR34','INFERELATOR35','INFERELATOR36','INFERELATOR37','INFERELATOR38'],\
+                 cict_version=['v2'],\
+                 ds=EXP_PARAM_DF.groupby(['exp_dir','dataset']).count().reset_index().itertuples())
+
+   
 ### SERGIO data from github
 ### DS1, DS2, DS3 are steady state
 ### DS4, DS5, DS6, DS7 are differentiation datasets
@@ -602,7 +684,15 @@ rule beeline_sergio_cictpairs_out:
                  train_test=['Train','Test'],\
                  exp_dir=['SERGIO_DS4','SERGIO_DS5','SERGIO_DS6','SERGIO_DS7'],\
                  network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)])
-   
+# Generate pairs data for DEEPDRIM using SERGIO CICT training datasets
+# should be using beeline_exp_cictpairs_version
+rule beeline_sergio_cictpairs_version_out:
+   input: expand('inputs_beeline2/{exp_dir}/net{network_i}/CICT_{cict_version}/cict{train_test}.csv',\
+                 train_test=['Train','Test'],\
+                 exp_dir=['SERGIO_DS4','SERGIO_DS5','SERGIO_DS6','SERGIO_DS7'],\
+                 network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)],\
+                 cict_version=['v2'])
+
 # generate pairs data for DEEPDRIM using SERGIO full datasets 
 rule beeline_sergio_deepdrim_pairs:
    input: expfile='{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/ExpressionData.csv',\
@@ -714,6 +804,43 @@ rule beeline_sergio_deepdrim7_pairs_out:
                  network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)])
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_sergio_deepdrim7_pairs_out
 
+# Generate pairs data for DEEPDRIM7_version using SERGIO CICT_version training+testing datasets
+rule beeline_sergio_deepdrim7version_pairs:
+   input: expfile='{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/ExpressionData.csv',\
+          netfile_cicttrain='{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/CICT_{cict_version}/cictTrain.csv',\
+          netfile_cicttest='{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/CICT_{cict_version}/cictTest.csv'
+   output: expout='{exp_input_dir}/SERGIO_{exp_name,[^_]+}/net{network_i}/{dd_version,DEEPDRIM7}_{cict_version}/ExpressionData.csv',\
+           netout='{exp_input_dir}/SERGIO_{exp_name,[^_]+}/net{network_i}/{dd_version,,DEEPDRIM7}_{cict_version}/cictLearn.csv',\
+           pairout='{exp_input_dir}/SERGIO_{exp_name,[^_]+}/net{network_i}/{dd_version,DEEPDRIM7}_{cict_version}/training_pairs{dd_version}_{cict_version}.txt',\
+           cvout="{exp_input_dir}/SERGIO_{exp_name,[^_]+}/net{network_i}/{dd_version,DEEPDRIM7}_{cict_version}/training_pairs{dd_version}_{cict_version}.txtCV_fold_divide.txt"
+   log: "{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{dd_version,DEEPDRIM7}_{cict_version}/training_pairs{dd_version}_{cict_version}.log"
+   params: overlay="images_singularity_overlay/{dd_version}_{cict_version}.ext3",\
+           sif="images_singularity/{dd_version}_{cict_version}.sif",\
+           D="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{dd_version}_{cict_version}",\
+           label='{dd_version}_{cict_version}',\
+           jobname='blg_{exp_name}_net{network_i}_{dd_version}_{cict_version}',\
+           clog_prefix='training_pairs{dd_version}_{cict_version}'
+   threads: 1
+   resources: mem_mb='16000', time='00:15:00', gpu=''
+   shell: """
+     mkdir -p {params.D}; find {params.D} -type f ! -name {params.clog_prefix}.slurm-out -delete
+     cp {input.expfile} {output.expout}
+     cp {input.netfile_cicttrain} {output.netout}
+     tail -n +2 {input.netfile_cicttest} >> {output.netout}
+     singularity exec \
+        --no-home \
+        --overlay {params.overlay}:ro \
+        {params.sif} \
+        /bin/bash -c \"source /ext3/env.sh; conda activate DEEPDRIM; cd {params.D}; \
+                       command time -v -o time_generate_pairs.txt python /scratch/ch153/packages/DeepDRIM/hlab1/DeepDRIM/generate_pairs_cictpairs2.py -expr_file ExpressionData.csv -cict_pair_file cictLearn.csv -label {params.label} > training_pairs{params.label}.log 2>&1 \"
+   """
+rule beeline_sergio_deepdrim7version_pairs_out:
+   input: expand('inputs_beeline2/{exp_dir}/net{network_i}/DEEPDRIM7_{cict_version}/training_pairsDEEPDRIM7_{cict_version}.txt',\
+                 exp_dir=['SERGIO_DS4','SERGIO_DS5','SERGIO_DS6','SERGIO_DS7'],\
+                 network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)],\
+                 cict_version=['v2'])
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_sergio_deepdrim7version_pairs_out
+
 
 # Generate prediction pairs data for DEEPDRIM,DEEPDRIM5,DEEPDRIM6 using outgoing edges for TFs in the expression data
 rule beeline_sergio_deepdrimXpred_pairs:
@@ -783,23 +910,26 @@ rule beeline_sergio_deepdrim7pred_pairs_out:
 ruleorder: beeline_sergio_deepdrim_pairs > beeline_exp_deepdrim5_pairs
 ruleorder: beeline_sergio_deepdrim6_pairs > beeline_exp_deepdrim6_pairs
 ruleorder: beeline_sergio_deepdrim7_pairs > beeline_exp_deepdrim7_pairs
+ruleorder: beeline_sergio_deepdrim7version_pairs > beeline_exp_deepdrim7version_pairs
 ruleorder: beeline_sergio_deepdrim7pred_pairs > beeline_exp_deepdrimYpred_pairs
 ruleorder: beeline_sergio_deepdrimXpred_pairs > beeline_exp_deepdrimXpred_pairs
 
-# Generate input files for INFERELATOR31, INFERELATOR32 using all genes in the expression data as regulators
+# Generate input files for INFERELATOR3X_versions using all genes in the expression data as regulators
 rule beeline_sergio_inferelator3X_input:
    input: expfile='{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/ExpressionData.csv',\
           netfile='{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/refNetwork.csv',\
           netfile_cicttrain="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/cictTrain.csv",\
           netfile_cicttest="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/cictTest.csv"
-   output: regout="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{inf3_version,INFERELATOR3[0-9]+}/ExpressionData-Genes.tsv",\
-           netout="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{inf3_version,INFERELATOR3[0-9]+}/refNetwork.tsv",\
-           netout_prior="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{inf3_version,INFERELATOR3[0-9]+}/cictPositive.tsv"
-   log: "{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{inf3_version}/ExpressionData-Genes.log"
+   output: regout="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{inf3x,INFERELATOR3[0-9]+}/ExpressionData-Genes.tsv",\
+           netout="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{inf3x,INFERELATOR3[0-9]+}/refNetwork.tsv",\
+           netout_prior="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{inf3x,INFERELATOR3[0-9]+}/cictPositive.tsv",\
+           netout_prior2="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{inf3x,INFERELATOR3[0-9]+}/cictTrainPositive.tsv"
+#   output: netout_prior2="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{inf3x,INFERELATOR3[0-9]+}/cictTrainPositive.tsv"
+   log: "{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{inf3x}/ExpressionData-Genes.log"
    params: overlay="images_singularity_overlay/INFERELATOR3.ext3",\
            sif="images_singularity/INFERELATOR3.sif",\
-           D="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{inf3_version}",\
-           jobname='blg_{exp_name}_net{network_i}_{inf3_version}',\
+           D="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{inf3x}",\
+           jobname='blg_{exp_name}_net{network_i}_{inf3x}',\
            clog_prefix='ExpressionData-Genes'
    threads: 1
    shell: """
@@ -807,13 +937,48 @@ rule beeline_sergio_inferelator3X_input:
      awk -v FS=',' -v OFS='\\t' '{{ if (NR>1) {{ print $1 }} }}' {input.expfile} | sort -u > {output.regout}
      awk -v FS=',' -v OFS='\\t' '{{ $1=$1; print $0 }}' {input.netfile} > {output.netout}
      awk -v FS='\\t' -v OFS='\\t' '{{ if (NR==1) {{ print $0 }} else if ($3==\"TRUE\") {{ print $0 }} }}' {input.netfile_cicttrain} {input.netfile_cicttest} > {output.netout_prior}
+     awk -v FS='\\t' -v OFS='\\t' '{{ if (NR==1) {{ print $0 }} else if ($3==\"TRUE\") {{ print $0 }} }}' {input.netfile_cicttrain} > {output.netout_prior2}
    """
 rule beeline_sergio_inferelator3X_input_out:
-   input: expand('inputs_beeline2/{exp_dir}/net{network_i}/{inf3_version}/ExpressionData-Genes.tsv',\
+   input: expand('inputs_beeline2/{exp_dir}/net{network_i}/{inf3x}/ExpressionData-Genes.tsv',\
                  exp_dir=['SERGIO_DS4','SERGIO_DS5','SERGIO_DS6','SERGIO_DS7'],\
                  network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)],\
-                 inf3_version=['INFERELATOR31','INFERELATOR32','INFERELATOR33','INFERELATOR34','INFERELATOR35','INFERELATOR36'])
+                 inf3x=['INFERELATOR31','INFERELATOR32','INFERELATOR33','INFERELATOR34',\
+                               'INFERELATOR35','INFERELATOR36','INFERELATOR37','INFERELATOR38'])
 
+# Generate input files for INFERELATOR3X_version using all genes in the expression data as regulators and the corresponding CICT_version training and test sets
+rule beeline_sergio_inferelator3X_version_input:
+   input: expfile='{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/ExpressionData.csv',\
+          netfile='{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/refNetwork.csv',\
+          netfile_cicttrain="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/CICT_{cict_version}/cictTrain.csv",\
+          netfile_cicttest="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/CICT_{cict_version}/cictTest.csv"
+   output: regout="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{inf3x,INFERELATOR3[0-9]+}_{cict_version}/ExpressionData-Genes.tsv",\
+           netout="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{inf3x,INFERELATOR3[0-9]+}_{cict_version}/refNetwork.tsv",\
+           netout_prior="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{inf3x,INFERELATOR3[0-9]+}_{cict_version}/cictPositive.tsv",\
+           netout_prior2="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{inf3x,INFERELATOR3[0-9]+}_{cict_version}/cictTrainPositive.tsv"
+   log: "{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{inf3x}_{cict_version}/ExpressionData-Genes.log"
+   params: overlay="images_singularity_overlay/INFERELATOR3_{cict_version}.ext3",\
+           sif="images_singularity/INFERELATOR3_{cict_version}.sif",\
+           D="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{inf3x}_{cict_version}",\
+           jobname='blg_{exp_name}_net{network_i}_{inf3x}_{cict_version}',\
+           clog_prefix='ExpressionData-Genes'
+   threads: 1
+   shell: """
+     mkdir -p {params.D}
+     awk -v FS=',' -v OFS='\\t' '{{ if (NR>1) {{ print $1 }} }}' {input.expfile} | sort -u > {output.regout}
+     awk -v FS=',' -v OFS='\\t' '{{ $1=$1; print $0 }}' {input.netfile} > {output.netout}
+     awk -v FS='\\t' -v OFS='\\t' '{{ if (NR==1) {{ print $0 }} else if ($3==\"TRUE\") {{ print $0 }} }}' {input.netfile_cicttrain} {input.netfile_cicttest} > {output.netout_prior}
+     awk -v FS='\\t' -v OFS='\\t' '{{ if (NR==1) {{ print $0 }} else if ($3==\"TRUE\") {{ print $0 }} }}' {input.netfile_cicttrain} > {output.netout_prior2}
+   """
+rule beeline_sergio_inferelator3X_version_input_out:
+   input: expand('inputs_beeline2/{exp_dir}/net{network_i}/{inf3x}_{cict_version}/ExpressionData-Genes.tsv',\
+                 exp_dir=['SERGIO_DS4','SERGIO_DS5','SERGIO_DS6','SERGIO_DS7'],\
+                 network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)],\
+                 inf3x=['INFERELATOR31','INFERELATOR32','INFERELATOR33','INFERELATOR34',\
+                        'INFERELATOR35','INFERELATOR36','INFERELATOR37','INFERELATOR38'],\
+                 cict_version=['v2'])
+
+   
 def get_tf_num(wildcards,tfdiv_file):
     with open(tfdiv_file.format(**wildcards),'r') as fp:
         tf_num = len(fp.readlines()) - 1
@@ -872,6 +1037,13 @@ rule beeline_deepdrim7_repr_out:
    input: expand('inputs_beeline2/{ds.exp_dir}/{ds.dataset}/DEEPDRIM7/representation_train.out',\
                  ds=EXP_PARAM_DF.groupby(['exp_dir','dataset']).count().reset_index().itertuples()) +\
           expand('inputs_beeline2/{exp_dir}/net{network_i}/DEEPDRIM7/representation_train.out',\
+                 exp_dir=['SERGIO_DS4','SERGIO_DS5','SERGIO_DS6','SERGIO_DS7'],\
+                 network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)])
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_deepdrim7_repr_out
+rule beeline_deepdrim7v2_repr_out:
+   input: expand('inputs_beeline2/{ds.exp_dir}/{ds.dataset}/DEEPDRIM7_v2/representation_train.out',\
+                 ds=EXP_PARAM_DF.groupby(['exp_dir','dataset']).count().reset_index().itertuples()) +\
+          expand('inputs_beeline2/{exp_dir}/net{network_i}/DEEPDRIM7_v2/representation_train.out',\
                  exp_dir=['SERGIO_DS4','SERGIO_DS5','SERGIO_DS6','SERGIO_DS7'],\
                  network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)])
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_deepdrim7_repr_out
@@ -1115,15 +1287,15 @@ def get_run_mem_mb(wildcards):
 
 def get_run_time(wildcards):
     switcher = {
-        "L0": "8:00:00",
-        "L1": "8:00:00",
-        "L2": "8:00:00",
-        "L0_ns": "8:00:00",
-        "L1_ns": "8:00:00",
-        "L2_ns": "8:00:00",
-        "L0_lofgof": "8:00:00",
-        "L1_lofgof": "8:00:00",
-        "L2_lofgof": "8:00:00",
+        "L0": "4:00:00",
+        "L1": "4:00:00",
+        "L2": "4:00:00",
+        "L0_ns": "4:00:00",
+        "L1_ns": "4:00:00",
+        "L2_ns": "4:00:00",
+        "L0_lofgof": "4:00:00",
+        "L1_lofgof": "4:00:00",
+        "L2_lofgof": "4:00:00",
         "SERGIO_DS4": "0:20:00",
         "SERGIO_DS5": "0:20:00",
         "SERGIO_DS6": "0:20:00",
@@ -1173,22 +1345,21 @@ rule beeline_run:#\\b(?!CICT).*\\b matches anything that does not start with CIC
 
 rule beeline_run_out:
    input: expand('outputs/{exp_dir}/{dataset}/{algorithm}/rankedEdges.csv',\
-                 exp_dir=['L2'],\
+                 exp_dir=['L0','L1','L2'],\
                  dataset=DATASET_PARAMS['cs']['dataset'],\
-                 algorithm=[alg for alg in ALGORITHMS if alg not in ['CICT','CICT_v2','DEEPDRIM','DEEPDRIM5','DEEPDRIM6','SCNS','GRNVBEM','PPCOR','SINCERITIES']])
+                 algorithm=[alg for alg in ALGORITHMS if alg not in ['CICT','CICT_v2','CICT_v2.back','DEEPDRIM','DEEPDRIM5','DEEPDRIM6','SCNS','GRNVBEM','PPCOR','SINCERITIES']])
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_run_out
 rule beeline_run_ns_out:
    input: expand('outputs/{exp_dir}/{dataset}/{algorithm}/rankedEdges.csv',\
                  exp_dir=['L0_ns','L1_ns','L2_ns'],\
                  dataset=DATASET_PARAMS['ns']['dataset'],\
-                 algorithm=[alg for alg in ALGORITHMS if alg not in ['CICT','CICT_v2','DEEPDRIM','DEEPDRIM5','DEEPDRIM6','SCNS','GRNVBEM','PPCOR','SINCERITIES']])
+                 algorithm=[alg for alg in ALGORITHMS if alg not in ['CICT','CICT_v2','CICT_v2.back','DEEPDRIM','DEEPDRIM5','DEEPDRIM6','SCNS','GRNVBEM','PPCOR','SINCERITIES']])
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_run_ns_out
-#                 algorithm=[alg for alg in ALGORITHMS if alg not in ['CICT','DEEPDRIM','DEEPDRIM5','DEEPDRIM6','DEEPDRIM8','GRNVBEM']]) +\ 
 rule beeline_run_lofgof_out:
    input: expand('outputs/{exp_dir}/{dataset}/{algorithm}/rankedEdges.csv',\
                  exp_dir=['L0_lofgof','L1_lofgof','L2_lofgof'],\
                  dataset=DATASET_PARAMS['lofgof']['dataset'],\
-                 algorithm=[alg for alg in ALGORITHMS if alg not in ['CICT','DEEPDRIM','DEEPDRIM5','DEEPDRIM6','SCNS','GRNVBEM']])
+                 algorithm=[alg for alg in ALGORITHMS if alg not in ['CICT','CICT_v2','CICT_v2.back','DEEPDRIM','DEEPDRIM5','DEEPDRIM6','SCNS','GRNVBEM']])
 rule beeline_run_lofgof2_out:
    input: expand('outputs/{exp_dir}/{dataset}/{algorithm}/run_{train_i}/rankedEdges.csv',\
                  exp_dir=['L2_lofgof'],\
@@ -1201,22 +1372,22 @@ rule beeline_run_sergio_out:
    input: expand('outputs/{exp_dir}/net{network_i}/{algorithm}/rankedEdges.csv',\
                  exp_dir=['SERGIO_DS4','SERGIO_DS5','SERGIO_DS6','SERGIO_DS7'],\
                  network_i=range(15),\
-                 algorithm=[alg for alg in ALGORITHMS if alg not in ['CICT','CICT_v2','DEEPDRIM','DEEPDRIM5','DEEPDRIM6']]) +\
+                 algorithm=[alg for alg in ALGORITHMS if alg not in ['CICT','CICT_v2','CICT_v2.back','DEEPDRIM','DEEPDRIM5','DEEPDRIM6']]) +\
           expand('outputs/{exp_dir}/net{network_i}/{algorithm}/rankedEdges.csv',\
                  exp_dir=['SERGIO_DS4','SERGIO_DS5','SERGIO_DS6','SERGIO_DS7'],\
                  network_i=[str(i)+'_sh6.5_perc80' for i in range(15)],\
-                 algorithm=[alg for alg in ALGORITHMS if alg not in ['CICT','CICT_v2','DEEPDRIM','DEEPDRIM5','DEEPDRIM6','SINCERITIES','PIDC']])
+                 algorithm=[alg for alg in ALGORITHMS if alg not in ['CICT','CICT_v2','CICT_v2.back','DEEPDRIM','DEEPDRIM5','DEEPDRIM6','SINCERITIES','PIDC']])
                  #algorithm=['INFERELATOR31','INFERELATOR32'])
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_run_sergio_out
 rule beeline_run_sergio2_out:
    input: expand('outputs/{exp_dir}/net{network_i}/{algorithm}/rankedEdges.csv',\
                  exp_dir=['SERGIO_DS4','SERGIO_DS5','SERGIO_DS6','SERGIO_DS7'],\
                  network_i=range(15),\
-                 algorithm=['INFERELATOR31','INFERELATOR32']) +\
+                 algorithm=['INFERELATOR3{x}_v2'.format(x=x) for x in range(1,9)]) +\
           expand('outputs/{exp_dir}/net{network_i}/{algorithm}/rankedEdges.csv',\
                  exp_dir=['SERGIO_DS4','SERGIO_DS5','SERGIO_DS6','SERGIO_DS7'],\
                  network_i=[str(i)+'_sh6.5_perc80' for i in range(15)],\
-                 algorithm=['INFERELATOR31','INFERELATOR32'])
+                 algorithm=['INFERELATOR3{x}_v2'.format(x=x) for x in range(1,9)])
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_run_sergio2_out
 
 
