@@ -54,7 +54,16 @@ InputMapper = {'SCODE':SCODE.generateInputs,
                'INFERELATOR35':INFERELATOR3.generateInputs,
                'INFERELATOR36':INFERELATOR3.generateInputs,
                'INFERELATOR37':INFERELATOR3.generateInputs,
-               'INFERELATOR38':INFERELATOR3.generateInputs}}
+               'INFERELATOR38':INFERELATOR3.generateInputs,
+               'INFERELATOR31_v2':INFERELATOR3.generateInputs,
+               'INFERELATOR32_v2':INFERELATOR3.generateInputs,
+               'INFERELATOR33_v2':INFERELATOR3.generateInputs,
+               'INFERELATOR34_v2':INFERELATOR3.generateInputs,
+               'INFERELATOR35_v2':INFERELATOR3.generateInputs,
+               'INFERELATOR36_v2':INFERELATOR3.generateInputs,
+               'INFERELATOR37_v2':INFERELATOR3.generateInputs,
+               'INFERELATOR38_v2':INFERELATOR3.generateInputs}
+
 
 
 
@@ -89,7 +98,15 @@ AlgorithmMapper = {'SCODE':SCODE.run,
             'INFERELATOR35':INFERELATOR3.run,
             'INFERELATOR36':INFERELATOR3.run,
             'INFERELATOR37':INFERELATOR3.run,
-            'INFERELATOR38':INFERELATOR3.run}
+            'INFERELATOR38':INFERELATOR3.run,                   
+            'INFERELATOR31_v2':INFERELATOR3.run,
+            'INFERELATOR32_v2':INFERELATOR3.run,
+            'INFERELATOR33_v2':INFERELATOR3.run,
+            'INFERELATOR34_v2':INFERELATOR3.run,
+            'INFERELATOR35_v2':INFERELATOR3.run,
+            'INFERELATOR36_v2':INFERELATOR3.run,
+            'INFERELATOR37_v2':INFERELATOR3.run,
+            'INFERELATOR38_v2':INFERELATOR3.run}
 
 
 
@@ -123,7 +140,16 @@ OutputParser = {'SCODE':SCODE.parseOutput,
             'INFERELATOR35':INFERELATOR3.parseOutput,
             'INFERELATOR36':INFERELATOR3.parseOutput,
             'INFERELATOR37':INFERELATOR3.parseOutput,
-            'INFERELATOR38':INFERELATOR3.parseOutput}
+            'INFERELATOR38':INFERELATOR3.parseOutput,
+            'INFERELATOR31_v2':INFERELATOR3.parseOutput,
+            'INFERELATOR32_v2':INFERELATOR3.parseOutput,
+            'INFERELATOR33_v2':INFERELATOR3.parseOutput,
+            'INFERELATOR34_v2':INFERELATOR3.parseOutput,
+            'INFERELATOR35_v2':INFERELATOR3.parseOutput,
+            'INFERELATOR36_v2':INFERELATOR3.parseOutput,
+            'INFERELATOR37_v2':INFERELATOR3.parseOutput,
+            'INFERELATOR38_v2':INFERELATOR3.parseOutput}
+
 
 
 
