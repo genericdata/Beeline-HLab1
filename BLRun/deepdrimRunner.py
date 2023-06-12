@@ -356,7 +356,7 @@ def parseOutputForPredictFromBestModel(RunnerObj,algName,trainingPairsInputDir,m
     '''
     Function to parse outputs from DEEPDRIM. 
     Select the model that has the best performance metric out of the CV models, 
-    and use this model to calclate predicted scores for all edges.
+    and use this model to calculate predicted scores for all edges.
 
     :param RunnerObj: An instance of the :class:`BLRun`
     '''
