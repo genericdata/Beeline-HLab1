@@ -46,6 +46,9 @@ InputMapper = {'SCODE':SCODE.generateInputs,
                'DEEPDRIM6':DEEPDRIM6.generateInputs,
                'DEEPDRIM7':DEEPDRIM7.generateInputs,
                'DEEPDRIM8':DEEPDRIM8.generateInputs,
+               'DEEPDRIM72':DEEPDRIM7.generateInputs,
+               'DEEPDRIM7_v2':DEEPDRIM7.generateInputs,
+               'DEEPDRIM72_v2':DEEPDRIM7.generateInputs,
                'CNNC':CNNC.generateInputs,
                'INFERELATOR31':INFERELATOR3.generateInputs,
                'INFERELATOR32':INFERELATOR3.generateInputs,
@@ -62,7 +65,9 @@ InputMapper = {'SCODE':SCODE.generateInputs,
                'INFERELATOR35_v2':INFERELATOR3.generateInputs,
                'INFERELATOR36_v2':INFERELATOR3.generateInputs,
                'INFERELATOR37_v2':INFERELATOR3.generateInputs,
-               'INFERELATOR38_v2':INFERELATOR3.generateInputs}
+               'INFERELATOR38_v2':INFERELATOR3.generateInputs,
+               'INFERELATOR39_v2':INFERELATOR3.generateInputs,
+               'INFERELATOR310_v2':INFERELATOR3.generateInputs}
 
 
 
@@ -89,7 +94,10 @@ AlgorithmMapper = {'SCODE':SCODE.run,
             'DEEPDRIM5':DEEPDRIM5.run,
             'DEEPDRIM6':DEEPDRIM6.run,
             'DEEPDRIM7':DEEPDRIM7.run,
+            'DEEPDRIM72':DEEPDRIM7.run,
             'DEEPDRIM8':DEEPDRIM8.run,
+            'DEEPDRIM7_v2':DEEPDRIM7.run,
+            'DEEPDRIM72_v2':DEEPDRIM7.run,
             'CNNC':CNNC.run,
             'INFERELATOR31':INFERELATOR3.run,
             'INFERELATOR32':INFERELATOR3.run,
@@ -106,7 +114,10 @@ AlgorithmMapper = {'SCODE':SCODE.run,
             'INFERELATOR35_v2':INFERELATOR3.run,
             'INFERELATOR36_v2':INFERELATOR3.run,
             'INFERELATOR37_v2':INFERELATOR3.run,
-            'INFERELATOR38_v2':INFERELATOR3.run}
+            'INFERELATOR38_v2':INFERELATOR3.run,
+            'INFERELATOR39_v2':INFERELATOR3.run,
+            'INFERELATOR310_v2':INFERELATOR3.run}
+
 
 
 
@@ -131,7 +142,10 @@ OutputParser = {'SCODE':SCODE.parseOutput,
             'DEEPDRIM5':DEEPDRIM5.parseOutput,
             'DEEPDRIM6':DEEPDRIM6.parseOutput,
             'DEEPDRIM7':DEEPDRIM7.parseOutput,
+            'DEEPDRIM72':DEEPDRIM7.parseOutput,
             'DEEPDRIM8':DEEPDRIM8.parseOutput,
+            'DEEPDRIM7_v2':DEEPDRIM7.parseOutput,
+            'DEEPDRIM72_v2':DEEPDRIM7.parseOutput,
             'CNNC':CNNC.parseOutput,
             'INFERELATOR31':INFERELATOR3.parseOutput,
             'INFERELATOR32':INFERELATOR3.parseOutput,
@@ -148,7 +162,10 @@ OutputParser = {'SCODE':SCODE.parseOutput,
             'INFERELATOR35_v2':INFERELATOR3.parseOutput,
             'INFERELATOR36_v2':INFERELATOR3.parseOutput,
             'INFERELATOR37_v2':INFERELATOR3.parseOutput,
-            'INFERELATOR38_v2':INFERELATOR3.parseOutput}
+            'INFERELATOR38_v2':INFERELATOR3.parseOutput,
+            'INFERELATOR39_v2':INFERELATOR3.parseOutput,
+            'INFERELATOR310_v2':INFERELATOR3.parseOutput}
+
 
 
 
