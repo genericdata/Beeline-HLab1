@@ -106,6 +106,34 @@ input_settings:
               numBatches: [20]
 
 
+        - name: "DEEPDRIM7_v2"
+          params: 
+              should_run: [True]
+              useGPU: [True]
+              numBatches: [20]
+
+
+        - name: "DEEPDRIM72"
+          params: 
+              should_run: [True]
+              useGPU: [True]
+              numBatches: [20]
+
+
+        - name: "DEEPDRIM72_v2"
+          params: 
+              should_run: [True]
+              useGPU: [True]
+              numBatches: [20]
+
+
+        - name: "DEEPDRIM73_v2"
+          params: 
+              should_run: [True]
+              useGPU: [True]
+              numBatches: [20]
+
+
         - name: "INFERELATOR31"
           params: 
               should_run: [True]
