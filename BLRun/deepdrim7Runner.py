@@ -8,11 +8,14 @@ from sklearn.model_selection import GroupKFold
 from BLRun import deepdrimRunner
 
 def generateInputs(RunnerObj):
-    deepdrimRunner.generateInputsForPredict(RunnerObj,'DEEPDRIM7',RunnerObj.inputDir)
+    algName = RunnerObj.name
+    deepdrimRunner.generateInputsForPredict(RunnerObj,algName,RunnerObj.inputDir)
 
 def run(RunnerObj):
-    deepdrimRunner.runForTrainAndPredict(RunnerObj,'DEEPDRIM7',RunnerObj.inputDir)
+    algName = RunnerObj.name
+    deepdrimRunner.runForTrainAndPredict(RunnerObj,algName,RunnerObj.inputDir)
                                           
 def parseOutput(RunnerObj):
-    deepdrimRunner.parseOutputForPredictFromBestModel(RunnerObj,'DEEPDRIM7',RunnerObj.inputDir,'auprc')
+    algName = RunnerObj.name
+    deepdrimRunner.parseOutputForPredictFromBestModel(RunnerObj,algName,RunnerObj.inputDir,'auprc')
                                           
