@@ -63,7 +63,7 @@ def main(args):
 
     MPControl.set_multiprocess_engine("local")
     MPControl.connect()
-    utils.Debug.set_verbose_level(1)
+    utils.Debug.set_verbose_level(2)
     warnings.simplefilter("ignore")
     
     worker = setup_workflow(opts.method, opts.workflow, opts.in_dir,
