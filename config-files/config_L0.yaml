@@ -31,36 +31,50 @@ input_settings:
           exprData: "ExpressionData.csv"
           cellData: "PseudoTime.csv"
           trueEdges: "refNetwork.csv"
+          exprDataIdMap: "AllExpressionData-upper-Genes-HGNCSymbolCheck230830.csv"
+          exprDataIdMapType: "HGNCSymbolCheck230830.csv"
 
         - name: "hHep"
           exprData: "ExpressionData.csv"
           cellData: "PseudoTime.csv"
           trueEdges: "refNetwork.csv"
+          exprDataIdMap: "AllExpressionData-upper-Genes-HGNCSymbolCheck230830.csv"
+          exprDataIdMapType: "HGNCSymbolCheck230830.csv"
           
         - name: "mESC"
           exprData: "ExpressionData.csv"
           cellData: "PseudoTime.csv"
           trueEdges: "refNetwork.csv"
+          exprDataIdMap: "AllExpressionData-upper-Genes-MGIBatchReport230830.tsv"
+          exprDataIdMapType: "MGIBatchReport230830.tsv"
           
         - name: "mDC"
           exprData: "ExpressionData.csv"
           cellData: "PseudoTime.csv"
           trueEdges: "refNetwork.csv"
+          exprDataIdMap: "AllExpressionData-upper-Genes-MGIBatchReport230830.tsv"
+          exprDataIdMapType: "MGIBatchReport230830.tsv"
           
         - name: "mHSC-E"
           exprData: "ExpressionData.csv"
           cellData: "PseudoTime.csv"
           trueEdges: "refNetwork.csv"
+          exprDataIdMap: "AllExpressionData-upper-Genes-MGIBatchReport230830.tsv"
+          exprDataIdMapType: "MGIBatchReport230830.tsv"
           
         - name: "mHSC-GM"
           exprData: "ExpressionData.csv"
           cellData: "PseudoTime.csv"
           trueEdges: "refNetwork.csv"
+          exprDataIdMap: "AllExpressionData-upper-Genes-MGIBatchReport230830.tsv"
+          exprDataIdMapType: "MGIBatchReport230830.tsv"
 
         - name: "mHSC-L"
           exprData: "ExpressionData.csv"
           cellData: "PseudoTime.csv"
           trueEdges: "refNetwork.csv"
+          exprDataIdMap: "AllExpressionData-upper-Genes-MGIBatchReport230830.tsv"
+          exprDataIdMapType: "MGIBatchReport230830.tsv"
 
     # Denotes a list of algorithms to run. Each has the following parameters:
     #   name: Name of the algorithm. Must be recognized by the pipeline, see
@@ -97,6 +111,46 @@ input_settings:
               supervised.gtProp: [.2] #proportion of GT used for classification
               supervised.train: [.3] #proportion of classification records used for training
               fp.fn.cost: [1/5]  #False positive to False Negative cost ratio for threshold identification
+
+
+        - name: "CELLORACLE_v2"
+          params: 
+              should_run: [True]
+              regulators: ['ExpressionData-Genes.tsv']
+              useGS: ['False']
+              usePrior: ['cictTrainPositive.tsv']
+              splitGSForCV: ['False']
+              CVSplitRatio: ['None']
+              randomSeedList: ['100,101,102']
+
+
+        - name: "CELLORACLEDB"
+          params: 
+              should_run: [True]
+              regulators: ['ExpressionData-Genes.tsv']
+              mapRegulatorIds: [True]
+              useGS: ['False']
+              splitGSForCV: ['False']
+              CVSplitRatio: ['None']
+              randomSeedList: ['42,43,44,45,46,47,48,49,50,51']
+          dataset_params:
+              baseGRNType: 'promoter_base_GRN'
+              baseGRNName:
+                  hESC: 'hg38_gimmemotifsv5_fpr2'
+                  hHep: 'hg38_gimmemotifsv5_fpr2'
+                  mESC: 'mm10_gimmemotifsv5_fpr2'
+                  mDC: 'mm10_gimmemotifsv5_fpr2'
+                  mHSC-E: 'mm10_gimmemotifsv5_fpr2'
+                  mHSC-GM: 'mm10_gimmemotifsv5_fpr2'
+                  mHSC-L: 'mm10_gimmemotifsv5_fpr2'
+              baseGRNIdMapType:
+                  hESC: 'HGNCSymbolCheck230830.csv'
+                  hHep: 'HGNCSymbolCheck230830.csv'
+                  mESC:  'MGIBatchReport230830.tsv'
+                  mDC: 'MGIBatchReport230830.tsv'
+                  mHSC-E: 'MGIBatchReport230830.tsv'
+                  mHSC-GM: 'MGIBatchReport230830.tsv'
+                  mHSC-L: 'MGIBatchReport230830.tsv'
 
 
         - name: "CNNC"
@@ -413,6 +467,70 @@ input_settings:
         - name: "RANDOM"
           params: 
               should_run: [True] #<===
+
+
+        - name: "SCENIC_v2"
+          params:
+              should_run: [True]
+              regulators: ['ExpressionData-Genes.tsv']
+              useGS: ['False']
+              usePrior: ['cictTrainPositive.tsv']
+              splitGSForCV: ['False']
+              CVSplitRatio: ['None']
+              randomSeedList: ['100,101,102']
+              rankThreshold: ['None']
+              NESThreshold: ['2.0']
+
+
+        - name: "SCENICDB"
+          params:
+              should_run: [True]
+              randomSeedList: ['42,43,44,45,46,47,48,49,50,51']
+              numWorkers: ['4']
+              rankThreshold: ['1500']
+              NESThreshold: ['2.0']
+          dataset_params:
+              rankingDbVersion: 'feather_v1'
+              rankingDbNames:
+                  hESC: 'hg38__refseq-r80__500bp_up_and_100bp_down_tss.mc9nr,hg38__refseq-r80__10kb_up_and_down_tss.mc9nr'
+                  hHep: 'hg38__refseq-r80__500bp_up_and_100bp_down_tss.mc9nr,hg38__refseq-r80__10kb_up_and_down_tss.mc9nr'
+                  mESC: 'mm10__refseq-r80__500bp_up_and_100bp_down_tss.mc9nr,mm10__refseq-r80__10kb_up_and_down_tss.mc9nr'
+                  mDC: 'mm10__refseq-r80__500bp_up_and_100bp_down_tss.mc9nr,mm10__refseq-r80__10kb_up_and_down_tss.mc9nr'
+                  mHSC-E: 'mm10__refseq-r80__500bp_up_and_100bp_down_tss.mc9nr,mm10__refseq-r80__10kb_up_and_down_tss.mc9nr'
+                  mHSC-GM: 'mm10__refseq-r80__500bp_up_and_100bp_down_tss.mc9nr,mm10__refseq-r80__10kb_up_and_down_tss.mc9nr'
+                  mHSC-L: 'mm10__refseq-r80__500bp_up_and_100bp_down_tss.mc9nr,mm10__refseq-r80__10kb_up_and_down_tss.mc9nr'
+              rankingDbIdMapType:
+                  hESC: 'HGNCSymbolCheck230830.csv'
+                  hHep: 'HGNCSymbolCheck230830.csv'
+                  mESC:  'MGIBatchReport230830.tsv'
+                  mDC: 'MGIBatchReport230830.tsv'
+                  mHSC-E: 'MGIBatchReport230830.tsv'
+                  mHSC-GM: 'MGIBatchReport230830.tsv'
+                  mHSC-L: 'MGIBatchReport230830.tsv'
+              motifFName:
+                  hESC: 'motifs-v9-nr.hgnc-m0.001-o0.0.tbl'
+                  hHep: 'motifs-v9-nr.hgnc-m0.001-o0.0.tbl'
+                  mESC: 'motifs-v9-nr.mgi-m0.001-o0.0.tbl'
+                  mDC: 'motifs-v9-nr.mgi-m0.001-o0.0.tbl'
+                  mHSC-E: 'motifs-v9-nr.mgi-m0.001-o0.0.tbl'
+                  mHSC-GM: 'motifs-v9-nr.mgi-m0.001-o0.0.tbl'
+                  mHSC-L: 'motifs-v9-nr.mgi-m0.001-o0.0.tbl'
+              tfFName:
+                  hESC: 'allTFs_hg38'
+                  hHep: 'allTFs_hg38'
+                  mESC: 'allTFs_mm'
+                  mDC: 'allTFs_mm'
+                  mHSC-E: 'allTFs_mm'
+                  mHSC-GM: 'allTFs_mm'
+                  mHSC-L: 'allTFs_mm'
+              mapTFIds:
+                  hESC: False
+                  hHep: False
+                  mESC: False
+                  mDC: False
+                  mHSC-E: False
+                  mHSC-GM: False
+                  mHSC-L: False
 
 
         - name: "SCODE"
