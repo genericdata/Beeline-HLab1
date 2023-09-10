@@ -86,14 +86,21 @@ class BLRun(object):
                 data = {}
                 data['name'] = runner[0]
                 data['params'] = runner[1]
+                if (len(runner)==3):
+                    data['dataset_params'] = runner[2]
                 data['inputDir'] = Path.cwd().joinpath(self.input_settings.datadir.joinpath(dataset['name']))
                 data['fullInputDir'] = Path.cwd().joinpath(self.input_settings.fulldatadir.joinpath(dataset['name']))
                 data['singularityImage'] = str(self.input_settings.sifdir) + '/' + data['name'] + '.sif'
                 data['singularityOverlay'] = str(self.input_settings.overlaydir) + '/' + data['name'] + '.ext3'
                 data['singularityGPUFlag'] = self.input_settings.gpuflag
+                data['datasetName'] = dataset['name']
                 data['exprData'] = dataset['exprData']
                 data['cellData'] = dataset['cellData']
                 data['trueEdges'] = dataset['trueEdges']
+                # optional values
+                for opt_k in ['exprDataIdMap','exprDataIdMapType']:
+                    if opt_k in dataset:
+                        data[opt_k] = dataset[opt_k]
 
                 if 'should_run' in data['params'] and \
                         data['params']['should_run'] is False:
@@ -206,8 +213,10 @@ class ConfigParser(object):
                         *(algorithm['params'][param]
                             for param in algorithm['params']))]
                 for combo in combos:
-                    algorithms.append([algorithm['name'],combo])
-            
+                    if 'dataset_params' in algorithm:
+                        algorithms.append([algorithm['name'],combo,algorithm['dataset_params']])
+                    else:
+                        algorithms.append([algorithm['name'],combo])
 
         return algorithms
 
