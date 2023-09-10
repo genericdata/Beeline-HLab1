@@ -153,7 +153,6 @@ AlgorithmMapper = {'SCODE':SCODE.run,
             'CELLORACLEDB':CELLORACLEDB.run}
 
 
-
 OutputParser = {'SCODE':SCODE.parseOutput, 
             'SINCERITIES':SINCERITIES.parseOutput,
             'SCNS':SCNS.parseOutput,
@@ -212,7 +211,6 @@ OutputParser = {'SCODE':SCODE.parseOutput,
             'CELLORACLE_v3':CELLORACLE.parseOutput,
             'CELLORACLE_ewMIshrink':CELLORACLE.parseOutput,
             'CELLORACLEDB':CELLORACLEDB.parseOutput}
-
 
 
 

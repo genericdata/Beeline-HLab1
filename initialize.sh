@@ -99,6 +99,7 @@ conda deactivate
 "
 echo "Singularity files for DEEPDRIM: image is ${SIF_DIR}/DEEPDRIM.sif, overlay is ${EXT3_DIR}/DEEPDRIM.ext3"
 cd $BASEDIR
+
 echo "Linking the following DEEPDRIM methods to the DEEPDRIM images/overlay"
 for DD in DEEPDRIM4 DEEPDRIM5 DEEPDRIM6 DEEPDRIM7 DEEPDRIM8 \
 		    DEEPDRIM72 DEEPDRIM7_v2 DEEPDRIM72_v2 DEEPDRIM72_ewMIshrink_RFmaxdepth10_RFntrees20 DEEPDRIM72_ewMIshrink \

@@ -50,6 +50,7 @@ def EarlyPrec(evalObject, algorithmName, TFEdges = False):
                  "/" + dataset["name"] + "/" + algorithmName
 
         #algos = evalObject.input_settings.algorithms
+
         runDir = ''
         for algo in evalObject.input_settings.algorithms:
             if (algo[0]==algorithmName) & ('run_dir' in algo[1]): 

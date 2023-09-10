@@ -798,7 +798,6 @@ rule beeline_exp_inferelator3X_version_input_out:
                  cict_version=['v2'],\
                  ds=EXP_PARAM_DF.groupby(['exp_dir','dataset']).count().reset_index().itertuples())
 
-
 # Generate input files for INFERELATOR3 related algorithms (SCENIC_version and CellOracle_version)s using all genes in the expression data as regulators and the corresponding CICT_version training and test sets
 rule beeline_exp_inf3rel_version_input:
    input: expfile='{exp_input_dir}/{exp_dir}/{dataset}/{exp_dir}-ExpressionData.csv',\
@@ -1299,7 +1298,6 @@ rule beeline_sergio3_deepdrim7pred_pairs_out:
                  network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)])
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_sergio3_deepdrim7pred_pairs_out
 
-
 # Link prediction pairs data for DEEPDRIM7_version, DEEPDRIM7x_version to DEEPDRIM7 prediction pairs
 rule beeline_sergio_deepdrimYpred_version_pairs:
    input: pairfile="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{dd_version}/predict_pairs{dd_version}.txt",\
@@ -1579,7 +1577,6 @@ rule beeline_deepdrim72ewmishrinkrf1_repr_out:
                  exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
                  network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)])
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_deepdrim72ewmishrinkrf1_repr_out
-
 rule beeline_deepdrim73v2_repr_out:
    input: expand('inputs_beeline2/{ds.exp_dir}/{ds.dataset}/DEEPDRIM73_v2/representation_train.out',\
                  ds=EXP_PARAM_DF[(EXP_PARAM_DF.exp_dir.isin(['L0_lofgof','L1_lofgof','L2_lofgof'])) & (EXP_PARAM_DF.dataset=='mESC')].groupby(['exp_dir','dataset']).count().reset_index().itertuples())
@@ -1632,7 +1629,6 @@ rule beeline_sergio3_deepdrim7pred_repr_out:
                  exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
                  network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)])
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_sergio3_deepdrim7pred_repr_out
-
 
 # Link prediction pairs representation for DEEPDRIM7_version, DEEPDRIM7x_version to DEEPDRIM7 prediction pairs
 rule beeline_deepdrimYpred_version_repr:
