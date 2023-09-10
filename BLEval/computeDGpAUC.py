@@ -150,20 +150,21 @@ def pPRROC3(dataDict, inputSettings, directed = True, selfEdges = False, plotFla
                          total = len(inputSettings.algorithms), unit = " Algorithms"):
             
             print(algo)
+            runDir = algo[1]['run_dir']+'/' if 'run_dir' in algo[1] else ''
             # check if the output rankedEdges file exists
-            if Path(outDir + '/' +algo[0]+'/rankedEdges.csv').exists():
+            if Path(outDir + '/' +algo[0] + '/' + runDir + 'rankedEdges.csv').exists():
                  # Initialize Precsion
-                predDF = pd.read_csv(outDir + '/' +algo[0]+'/rankedEdges.csv', \
+                predDF = pd.read_csv(outDir + '/' +algo[0] + '/' + runDir + 'rankedEdges.csv', \
                                             sep = '\t', header =  0, index_col = None)
                 print(trueEdgesDF.head())
                 print(predDF.head())
                 if predDF.shape[0] > 0:    
                     pAUC[algo[0]] = computeScores3(trueEdgesDF, predDF, directed = True, selfEdges = selfEdges)
                 else:
-                    print(outDir + '/' +algo[0]+'/rankedEdges.csv', \
+                    print(outDir + '/' +algo[0] + '/' + runDir + 'rankedEdges.csv', \
                           ' is empty. Skipping...')                    
             else:
-                print(outDir + '/' +algo[0]+'/rankedEdges.csv', \
+                print(outDir + '/' +algo[0] + '/' + runDir + 'rankedEdges.csv', \
                       ' does not exist. Skipping...')
             PRName = '/PRplot'
             ROCName = '/ROCplot'
@@ -172,20 +173,21 @@ def pPRROC3(dataDict, inputSettings, directed = True, selfEdges = False, plotFla
                          total = len(inputSettings.algorithms), unit = " Algorithms"):
 
             print(algo)
+            runDir = algo[1]['run_dir']+'/' if 'run_dir' in algo[1] else ''
             # check if the output rankedEdges file exists
-            if Path(outDir + '/' +algo[0]+'/rankedEdges.csv').exists():
+            if Path(outDir + '/' +algo[0] + '/' + runDir + 'rankedEdges.csv').exists():
                  # Initialize Precsion
-                predDF = pd.read_csv(outDir + '/' +algo[0]+'/rankedEdges.csv', \
+                predDF = pd.read_csv(outDir + '/' +algo[0] + '/' + runDir + 'rankedEdges.csv', \
                                             sep = '\t', header =  0, index_col = None)
                 print(trueEdgesDF.head())
                 print(predDF.head())
                 if predDF.shape[0] > 0:
                     pAUC[algo[0]] = computeScores3(trueEdgesDF, predDF, directed = False, selfEdges = selfEdges)
                 else:
-                    print(outDir + '/' +algo[0]+'/rankedEdges.csv', \
+                    print(outDir + '/' +algo[0] + '/' + runDir + 'rankedEdges.csv', \
                           ' is empty. Skipping...')
             else:
-                print(outDir + '/' +algo[0]+'/rankedEdges.csv', \
+                print(outDir + '/' +algo[0] + '/' + runDir + 'rankedEdges.csv', \
                   ' does not exist. Skipping...')
 
     return pAUC
@@ -260,20 +262,21 @@ def pPRROC4(dataDict, inputSettings, directed = True, selfEdges = False, plotFla
                          total = len(inputSettings.algorithms), unit = " Algorithms"):
             
             print(algo)
+            runDir = algo[1]['run_dir']+'/' if 'run_dir' in algo[1] else ''
             # check if the output rankedEdges file exists
-            if Path(outDir + '/' +algo[0]+'/rankedEdges.csv').exists():
+            if Path(outDir + '/' +algo[0] + '/' + runDir + 'rankedEdges.csv').exists():
                  # Initialize Precsion
-                predDF = pd.read_csv(outDir + '/' +algo[0]+'/rankedEdges.csv', \
+                predDF = pd.read_csv(outDir + '/' +algo[0] + '/' + runDir + 'rankedEdges.csv', \
                                             sep = '\t', header =  0, index_col = None)
                 print(trueEdgesDF.head())
                 print(predDF.head())
                 if predDF.shape[0] > 0:    
                     pAUC[algo[0]] = computeScores4(expressionData,trueEdgesDF, predDF, directed = True, selfEdges = selfEdges)
                 else:
-                    print(outDir + '/' +algo[0]+'/rankedEdges.csv', \
+                    print(outDir + '/' +algo[0] + '/' + runDir + 'rankedEdges.csv', \
                           ' is empty. Skipping...')                    
             else:
-                print(outDir + '/' +algo[0]+'/rankedEdges.csv', \
+                print(outDir + '/' +algo[0] + '/' + runDir + 'rankedEdges.csv', \
                       ' does not exist. Skipping...')
             PRName = '/PRplot'
             ROCName = '/ROCplot'
@@ -282,20 +285,21 @@ def pPRROC4(dataDict, inputSettings, directed = True, selfEdges = False, plotFla
                          total = len(inputSettings.algorithms), unit = " Algorithms"):
 
             print(algo)
+            runDir = algo[1]['run_dir']+'/' if 'run_dir' in algo[1] else ''
             # check if the output rankedEdges file exists
-            if Path(outDir + '/' +algo[0]+'/rankedEdges.csv').exists():
+            if Path(outDir + '/' +algo[0] + '/' + runDir + 'rankedEdges.csv').exists():
                  # Initialize Precsion
-                predDF = pd.read_csv(outDir + '/' +algo[0]+'/rankedEdges.csv', \
+                predDF = pd.read_csv(outDir + '/' +algo[0] + '/' + runDir + 'rankedEdges.csv', \
                                             sep = '\t', header =  0, index_col = None)
                 print(trueEdgesDF.head())
                 print(predDF.head())
                 if predDF.shape[0] > 0:
                     pAUC[algo[0]] = computeScores4(expressionData, trueEdgesDF, predDF, directed = False, selfEdges = selfEdges)
                 else:
-                    print(outDir + '/' +algo[0]+'/rankedEdges.csv', \
+                    print(outDir + '/' +algo[0] + '/' + runDir + 'rankedEdges.csv', \
                           ' is empty. Skipping...')
             else:
-                print(outDir + '/' +algo[0]+'/rankedEdges.csv', \
+                print(outDir + '/' +algo[0] + '/' + runDir + 'rankedEdges.csv', \
                   ' does not exist. Skipping...')
                 
     return pAUC

@@ -50,6 +50,13 @@ def EarlyPrec(evalObject, algorithmName, TFEdges = False):
                  "/" + dataset["name"] + "/" + algorithmName
 
         #algos = evalObject.input_settings.algorithms
+        runDir = ''
+        for algo in evalObject.input_settings.algorithms:
+            if (algo[0]==algorithmName) & ('run_dir' in algo[1]): 
+                runDir = "/" + algo[1]['run_dir']
+                break
+        outDir = outDir + runDir
+        
         rank_path = outDir + "/rankedEdges.csv"
         print(rank_path)
         if not os.path.isdir(outDir):
