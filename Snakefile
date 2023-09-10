@@ -45,7 +45,19 @@ DATASET_PARAMS = {'cs':{'dataset':['hESC','hHep','mDC','mESC','mHSC-E','mHSC-GM'
                                   'mouse/mHSC-ChIP-seq-network.csv'],
                        'tffile':['human-tfs-upper.csv','human-tfs-upper.csv',
                                  'mouse-tfs.csv','mouse-tfs.csv','mouse-tfs.csv',
-                                 'mouse-tfs.csv','mouse-tfs.csv']},
+                                 'mouse-tfs.csv','mouse-tfs.csv'],
+                       'genefile':['NCBI_GRCh38.p14_AllGenes.csv','NCBI_GRCh38.p14_AllGenes.csv',
+                                   'NCBI_GRCm38.p6_AllGenes.csv','NCBI_GRCm38.p6_AllGenes.csv',
+                                   'NCBI_GRCm38.p6_AllGenes.csv','NCBI_GRCm38.p6_AllGenes.csv',
+                                   'NCBI_GRCm38.p6_AllGenes.csv'],
+                       'idmapfile':['ExpressionData-upper-Genes-HGNCSymbolCheck230830.csv',
+                                   'ExpressionData-upper-Genes-HGNCSymbolCheck230830.csv',
+                                   'ExpressionData-upper-Genes-MGIBatchReport230830.tsv',
+                                   'ExpressionData-upper-Genes-MGIBatchReport230830.tsv',
+                                   'ExpressionData-upper-Genes-MGIBatchReport230830.tsv',
+                                   'ExpressionData-upper-Genes-MGIBatchReport230830.tsv',
+                                   'ExpressionData-upper-Genes-MGIBatchReport230830.tsv']
+                        },
                   'ns': {'dataset':['hESC','hHep','mDC','mESC','mHSC-E','mHSC-GM','mHSC-L'],
                          'netfile':['human/Non-specific-ChIP-seq-network.csv',
                                     'human/Non-specific-ChIP-seq-network.csv',
@@ -56,11 +68,26 @@ DATASET_PARAMS = {'cs':{'dataset':['hESC','hHep','mDC','mESC','mHSC-E','mHSC-GM'
                                     'mouse/Non-Specific-ChIP-seq-network.csv'],
                          'tffile':['human-tfs-upper.csv','human-tfs-upper.csv',
                                    'mouse-tfs.csv','mouse-tfs.csv','mouse-tfs.csv',
-                                   'mouse-tfs.csv','mouse-tfs.csv']},
-                  'lofgof':{'dataset':['mESC'],
-                            'netfile':['mouse/mESC-lofgof-network.csv'],
-                            'tffile':['mouse-tfs.csv']}
-                  }
+                                   'mouse-tfs.csv','mouse-tfs.csv'],
+                        'genefile':['NCBI_GRCh38.p14_AllGenes.csv','NCBI_GRCh38.p14_AllGenes.csv',
+                                   'NCBI_GRCm38.p6_AllGenes.csv','NCBI_GRCm38.p6_AllGenes.csv',
+                                   'NCBI_GRCm38.p6_AllGenes.csv','NCBI_GRCm38.p6_AllGenes.csv',
+                                   'NCBI_GRCm38.p6_AllGenes.csv'],
+                        'idmapfile':['ExpressionData-upper-Genes-HGNCSymbolCheck230830.csv',
+                                    'ExpressionData-upper-Genes-HGNCSymbolCheck230830.csv',
+                                    'ExpressionData-upper-Genes-MGIBatchReport230830.tsv',
+                                    'ExpressionData-upper-Genes-MGIBatchReport230830.tsv',
+                                    'ExpressionData-upper-Genes-MGIBatchReport230830.tsv',
+                                    'ExpressionData-upper-Genes-MGIBatchReport230830.tsv',
+                                    'ExpressionData-upper-Genes-MGIBatchReport230830.tsv']
+                         },
+                    'lofgof':{'dataset':['mESC'],
+                              'netfile':['mouse/mESC-lofgof-network.csv'],
+                              'tffile':['mouse-tfs.csv'],
+                              'genefile':['NCBI_GRCm38.p6_AllGenes.csv'],
+                              'idmapfile':['ExpressionData-upper-Genes-MGIBatchReport230830.tsv']
+                    }
+}
                   
 exp_param_list = []
 EXP_LEVELS = {'L0':{'num_genes':500,'num_rand_genes':0,'num_exclude_genes':500},
@@ -128,7 +155,7 @@ rule beeline_exp_inputs_out:
    input: expand('inputs_beeline2/{ds.exp_dir}/{ds.dataset}/{ds.exp_dir}-PseudoTime.csv',\
                  ds=EXP_PARAM_DF.itertuples())
 
-rule beeline_exp_tfs:
+rule beeline_exp_tfs:# subset original TF files keeping multiple columns
     input: expfile='{exp_input_dir}/{exp_dir}/{dataset}/{exp_dir}-ExpressionData.csv',\
            netfile='{exp_input_dir}/{exp_dir}/{dataset}/{exp_dir}-network.csv',\
            tffile=lambda wc: get_exp_file(EXP_PARAM_DF,wc.exp_dir,wc.dataset,\
@@ -149,6 +176,94 @@ rule beeline_exp_tfs_out:
    input: expand('inputs_beeline2/{ds.exp_dir}/{ds.dataset}/{ds.exp_dir}-ExpressionData-TFs.csv',\
                  ds=EXP_PARAM_DF.itertuples())
 
+rule beeline_exp_tfs2:# subset original TF files keeping only the names
+    input: exptf='{exp_input_dir}/{exp_dir}/{dataset}/{exp_dir}-ExpressionData-TFs.csv',\
+           nettf='{exp_input_dir}/{exp_dir}/{dataset}/{exp_dir}-network-TFs.csv'
+    output: exptf='{exp_input_dir}/{exp_dir}/{dataset}/ExpressionData-TFs.txt',\
+            nettf='{exp_input_dir}/{exp_dir}/{dataset}/refNetwork-TFs.txt'
+    params: D="{exp_input_dir}/{exp_dir}/{dataset}"
+    threads: 1
+    shell: """
+        cut -d, -f 1 {input.exptf} > {output.exptf}
+        cut -d, -f 1 {input.nettf} > {output.nettf}
+    """
+rule beeline_exp_tfs2_out:
+   input: expand('inputs_beeline2/{ds.exp_dir}/{ds.dataset}/ExpressionData-TFs.txt',\
+                 ds=EXP_PARAM_DF.itertuples())
+
+rule beeline_exp_genes:
+    input: expfile=os.path.join(BEELINE_DATA_DIR,'inputs/scRNA-Seq/{dataset}/ExpressionData-upper.csv')
+    output: genefile=os.path.join(BEELINE_DATA_DIR,'inputs/scRNA-Seq/{dataset}/ExpressionData-upper-Genes.txt')
+    threads: 1
+    shell: """
+        awk -v FS=',' -v OFS=',' '{{ if (NR>1) {{ print $1 }} }}' {input.expfile} > {output.genefile}
+    """
+rule beeline_exp_genes_out:
+  input: expand(os.path.join(BEELINE_DATA_DIR,'inputs/scRNA-Seq/{ds.dataset}/ExpressionData-upper-Genes.txt'),\
+                ds=EXP_PARAM_DF.groupby(['dataset']).count().reset_index().itertuples())
+
+rule beeline_exp_idmap:
+    input: idmap_file=os.path.join(BEELINE_DATA_DIR,'inputs/scRNA-Seq/{dataset}/ExpressionData-upper-Genes-{idmap_suffix}')
+    output: idmap_file='{exp_input_dir}/{exp_dir}/{dataset}/AllExpressionData-upper-Genes-{idmap_suffix,HGNCSymbolCheck230830\\.csv|MGIBatchReport230830\\.tsv}'
+    params: D="{exp_input_dir}/{exp_dir}/{dataset}"
+    threads: 1
+    shell: """
+       cp {input.idmap_file} {output.idmap_file}
+    """
+rule beeline_exp_idmap_out:
+  input: expand('inputs_beeline2/{ds.exp_dir}/{ds.dataset}/All{ds.idmapfile}',\
+                ds=EXP_PARAM_DF.itertuples())
+  
+########## BACKUP STARTS #########################3
+rule beeline_exp_genename_map:
+    input: expfile='{exp_input_dir}/{exp_dir}/{dataset}/{exp_dir}-ExpressionData.csv',\
+           genefile=lambda wc: get_exp_file(EXP_PARAM_DF,wc.exp_dir,wc.dataset,\
+                                          os.path.join(BEELINE_NETWORKS_DIR,'Networks/{u.genefile}'))
+    output: genename_file='{exp_input_dir}/{exp_dir}/{dataset}/ExpressionData-GeneNameMap.csv'
+    params: D="{exp_input_dir}/{exp_dir}/{dataset}"
+    threads: 1
+    shell: """
+        echo -e 'BLName,DBName' >  {output.genename_file} 
+        awk -v FS=',' -v OFS=',' '(FNR>1) && (FNR==NR) {{ a[toupper($2)]=$2; next }} ($1 in a) {{ print $1,a[$1] }}' {input.genefile} {input.expfile} >> {output.genename_file}
+        echo -e 'BLName' >  {output.genename_file}.NotFound
+        awk -v FS=',' -v OFS=',' '(FNR>1) && (FNR==NR) {{ a[toupper($2)]=$2; next }} !($1 in a) {{ print $1 }}' {input.genefile} {input.expfile} >> {output.genename_file}.NotFound
+    """
+#            awk -v FS=',' -v OFS=',' '(FNR>1) && (FNR==NR) {{ a[$1]; next }} (toupper($2) in a) {{ print toupper($2),$2 }}' {input.expfile} {input.genefile} >> {output.genename_file}
+#        awk -v FS=',' -v OFS=',' '(FNR>1) && (FNR==NR) {{ a[$1]; next }} (toupper($2) in a) {{ print toupper($2),$2 }}' {input.expfile} {input.genefile} >> {output.genename_file}
+rule beeline_exp_genename_map_out:
+  input: expand('inputs_beeline2/{ds.exp_dir}/{ds.dataset}/ExpressionData-GeneNameMap.csv',\
+                ds=EXP_PARAM_DF.itertuples())
+
+GENENAME_MAP_FILES = {'AllGenes':{'dataset':['hESC','hHep','mDC','mESC','mHSC-E','mHSC-GM','mHSC-L'],
+                                  'genefile':['NCBI_GRCh38.p14_AllGenes.csv','NCBI_GRCh38.p14_AllGenes.csv',
+                                              'NCBI_GRCm38.p6_AllGenes.csv','NCBI_GRCm38.p6_AllGenes.csv',
+                                              'NCBI_GRCm38.p6_AllGenes.csv','NCBI_GRCm38.p6_AllGenes.csv',
+                                              'NCBI_GRCm38.p6_AllGenes.csv']}}
+
+GENENAME_MAP_DICT = {name_type:pd.DataFrame(name_data,columns=['dataset','genefile']).set_index('dataset')
+                     for name_type,name_data in GENENAME_MAP_FILES.items()}
+GENENAME_MAP_DF = pd.concat(GENENAME_MAP_DICT,names=['name_type','dataset']).reset_index()
+rule beeline_exp_genename_map2:
+    input: expfile=os.path.join(BEELINE_DATA_DIR,'inputs/scRNA-Seq/{dataset}/ExpressionData-upper.csv'),\
+           genefile=lambda wc: os.path.join(BEELINE_NETWORKS_DIR,'Networks',\
+                                            GENENAME_MAP_DF[(GENENAME_MAP_DF.dataset==wc.dataset) & (GENENAME_MAP_DF.name_type=='AllGenes')].genefile.iloc[0])
+    output: genename_file=os.path.join(BEELINE_DATA_DIR,'inputs/scRNA-Seq/{dataset}/ExpressionData-GeneNameMap-AllGenes.csv')
+    threads: 1
+    shell: """
+        echo -e 'BLName,DBName' >  {output.genename_file} 
+        awk -v FS=',' -v OFS=',' '(FNR>1) && (FNR==NR) {{ a[toupper($2)]=$2; next }} ($1 in a) {{ print $1,a[$1] }}' {input.genefile} {input.expfile} >> {output.genename_file}
+        echo -e 'BLName' >  {output.genename_file}.NotFound
+        awk -v FS=',' -v OFS=',' '(FNR>1) && (FNR==NR) {{ a[toupper($2)]=$2; next }} !($1 in a) {{ print $1 }}' {input.genefile} {input.expfile} >> {output.genename_file}.NotFound
+    """
+rule beeline_exp_genename_map2_out:
+  input: expand(os.path.join(BEELINE_DATA_DIR,'inputs/scRNA-Seq/{dataset}/ExpressionData-GeneNameMap-AllGenes.csv'),\
+                dataset=GENENAME_MAP_FILES['AllGenes']['dataset'])
+rule beeline_exp_genename_map2_out2:
+  shell: "echo {rules.beeline_exp_genename_map2_out.input}"
+rule beeline_exp_genename_map2_clean:
+  shell: "rm {rules.beeline_exp_genename_map2_out.input}"
+################# BACKUP ENDS ##########################
+  
 # Copy CICT training and test pairs
 rule beeline_exp_cictpairs:
    input: netfile_train='outputs/{exp_dir}/{dataset}/CICT/train.csv',\
@@ -631,6 +746,28 @@ rule beeline_exp_inferelator3X_input_out:
                  inf3x=['INFERELATOR31','INFERELATOR32','INFERELATOR33','INFERELATOR34','INFERELATOR35','INFERELATOR36','INFERELATOR37','INFERELATOR38'],\
                  ds=EXP_PARAM_DF.groupby(['exp_dir','dataset']).count().reset_index().itertuples())
 
+# Generate input files for Inferleator related algorithms using all genes in the expression data as regulators
+rule beeline_exp_inf3rel_input:
+   input: expfile='{exp_input_dir}/{exp_dir}/{dataset}/{exp_dir}-ExpressionData.csv',\
+          netfile='{exp_input_dir}/{exp_dir}/{dataset}/{exp_dir}-network.csv'
+   output: regout="{exp_input_dir}/{exp_dir}/{dataset}/{inf3rel,SCENICDB|CELLORACLEDB}/ExpressionData-Genes.tsv",\
+           netout="{exp_input_dir}/{exp_dir}/{dataset}/{inf3rel,SCENICDB|CELLORACLEDB}/refNetwork.tsv"
+   log: "{exp_input_dir}/{exp_dir}/{dataset}/{inf3rel}/ExpressionData-Genes.log"
+   params: D="{exp_input_dir}/{exp_dir}/{dataset}/{inf3rel}",\
+           jobname='blg_{dataset}_inf3',\
+           clog_prefix='ExpressionData-Genes'
+   threads: 1
+   shell: """
+     mkdir -p {params.D}
+     awk -v FS=',' -v OFS='\\t' '{{ if (NR>1) {{ print $1 }} }}' {input.expfile} | sort -u > {output.regout}
+     awk -v FS=',' -v OFS='\\t' '{{ $1=$1; print $0 }}' {input.netfile} > {output.netout}
+   """
+rule beeline_exp_inf3rel_input_out:
+   input: expand('inputs_beeline2/{ds.exp_dir}/{ds.dataset}/{inf3rel}/ExpressionData-Genes.tsv',\
+                 inf3rel=['CELLORACLEDB'],\
+                 ds=EXP_PARAM_DF.groupby(['exp_dir','dataset']).count().reset_index().itertuples())
+
+   
 # Generate input files for INFERELATOR3X_version using all genes in the expression data as regulators and the corresponding CICT_version training and test sets
 rule beeline_exp_inferelator3X_version_input:
    input: expfile='{exp_input_dir}/{exp_dir}/{dataset}/{exp_dir}-ExpressionData.csv',\
@@ -661,6 +798,34 @@ rule beeline_exp_inferelator3X_version_input_out:
                  cict_version=['v2'],\
                  ds=EXP_PARAM_DF.groupby(['exp_dir','dataset']).count().reset_index().itertuples())
 
+
+# Generate input files for INFERELATOR3 related algorithms (SCENIC_version and CellOracle_version)s using all genes in the expression data as regulators and the corresponding CICT_version training and test sets
+rule beeline_exp_inf3rel_version_input:
+   input: expfile='{exp_input_dir}/{exp_dir}/{dataset}/{exp_dir}-ExpressionData.csv',\
+          netfile='{exp_input_dir}/{exp_dir}/{dataset}/{exp_dir}-network.csv',\
+          netfile_cicttrain="{exp_input_dir}/{exp_dir}/{dataset}/CICT_{cict_version}/cictTrain.csv",\
+          netfile_cicttest="{exp_input_dir}/{exp_dir}/{dataset}/CICT_{cict_version}/cictTest.csv"
+   output: regout="{exp_input_dir}/{exp_dir}/{dataset}/{inf3rel,SCENIC|CELLORACLE}_{cict_version}/ExpressionData-Genes.tsv",\
+           netout="{exp_input_dir}/{exp_dir}/{dataset}/{inf3rel,SCENIC|CELLORACLE}_{cict_version}/refNetwork.tsv",\
+           netout_prior="{exp_input_dir}/{exp_dir}/{dataset}/{inf3rel,SCENIC|CELLORACLE}_{cict_version}/cictPositive.tsv",\
+           netout_prior2="{exp_input_dir}/{exp_dir}/{dataset}/{inf3rel,SCENIC|CELLORACLE}_{cict_version}/cictTrainPositive.tsv"
+   log: "{exp_input_dir}/{exp_dir}/{dataset}/{inf3rel}_{cict_version}/ExpressionData-Genes.log"
+   params: D="{exp_input_dir}/{exp_dir}/{dataset}/{inf3rel}_{cict_version}",\
+           jobname='blg_{dataset}_{inf3rel}_{cict_version}',\
+           clog_prefix='ExpressionData-Genes'
+   threads: 1
+   shell: """
+     mkdir -p {params.D}
+     awk -v FS=',' -v OFS='\\t' '{{ if (NR>1) {{ print $1 }} }}' {input.expfile} | sort -u > {output.regout}
+     awk -v FS=',' -v OFS='\\t' '{{ $1=$1; print $0 }}' {input.netfile} > {output.netout}
+     awk -v FS='\\t' -v OFS='\\t' '{{ if (NR==1) {{ print $0 }} else if ($3==\"TRUE\") {{ print $0 }} }}' {input.netfile_cicttrain} {input.netfile_cicttest} > {output.netout_prior}
+     awk -v FS='\\t' -v OFS='\\t' '{{ if (NR==1) {{ print $0 }} else if ($3==\"TRUE\") {{ print $0 }} }}' {input.netfile_cicttrain} > {output.netout_prior2}
+   """
+rule beeline_exp_inf3rel_version_input_out:
+   input: expand('inputs_beeline2/{ds.exp_dir}/{ds.dataset}/{inf3rel}_{cict_version}/ExpressionData-Genes.tsv',\
+                 inf3rel=['SCENIC','CELLORACLE'],\
+                 cict_version=['v2'],\
+                 ds=EXP_PARAM_DF.groupby(['exp_dir','dataset']).count().reset_index().itertuples())
    
 ### SERGIO data from github
 ### DS1, DS2, DS3 are steady state
@@ -770,8 +935,8 @@ rule beeline_sergio_inputs_out:
 
 rule beeline_sergio_tfs:
     input: netfile='{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/refNetwork.csv'
-    output: nettf1='{exp_input_dir}/SERGIO_{exp_name,DS[4-7]}/net{network_i}/refNetwork-TFs.csv'
-    params: D="{exp_input_dir}/SERGIO_{exp_name,DS[4-7]}/net{network_i}"
+    output: nettf1='{exp_input_dir}/SERGIO_{exp_name,DS[4-7](-R1)?}/net{network_i}/refNetwork-TFs.csv'
+    params: D="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}"
     threads: 1
     shell: """
         awk -v FS=',' -v OFS=',' '{{ if (NR>1) {{ print $1 }} }}' {input.netfile} | sort -u > {output.nettf1}
@@ -782,7 +947,14 @@ rule beeline_sergio_tfs_out:
                  network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)])
 rule beeline_sergio_tfs_out2:
    shell: "echo {rules.beeline_sergio_tfs_out.input}"
-   
+rule beeline_sergio3_tfs_out:
+   input: expand('inputs_beeline2/{exp_dir}/net{network_i}/refNetwork-TFs.csv',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)]) +\
+          expand('inputs_beeline2/{exp_dir}/net{network_i}_sh{dsh}_perc{dp}/refNetwork-TFs.csv',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)],dsh=[6.5],dp=[10,30,50,70,80])
+          
 rule beeline_sergio_bulk_inputs:
     input: expfileT='{exp_input_dir}/SERGIO_{dataset_name}/net{network_i}/ExpressionDataT.csv'
     output: expout_tsv='{exp_input_dir}/SERGIO_{dataset_name,[^_]+}_bulk/net{network_i,[0-9]+}/ExpressionData.csv'
@@ -815,7 +987,18 @@ rule beeline_sergio_cictpairs_version_out:
                  exp_dir=['SERGIO_DS4','SERGIO_DS5','SERGIO_DS6','SERGIO_DS7'],\
                  network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)],\
                  cict_version=['v2'])
-
+rule beeline_sergio3_cictpairs_version_out:
+   input: expand('inputs_beeline2/{exp_dir}/net{network_i}/CICT_{cict_version}/cict{train_test}.csv',\
+                 train_test=['Train','Test'],\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)],\
+                 cict_version=['ewMIshrink','ewMIshrink_RFmaxdepth10_RFntrees20']) + \
+          expand('inputs_beeline2/{exp_dir}/net{network_i}_sh{dsh}_perc{dp}/CICT_{cict_version}/cict{train_test}.csv',\
+                 train_test=['Train','Test'],\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)],dsh=[6.5],dp=[10,30,50,70,80],\
+                 cict_version=['ewMIshrink','ewMIshrink_RFmaxdepth10_RFntrees20'])
+   
 # generate pairs data for DEEPDRIM using SERGIO full datasets 
 rule beeline_sergio_deepdrim_pairs:
    input: expfile='{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/ExpressionData.csv',\
@@ -1039,6 +1222,12 @@ rule beeline_sergio_deepdrim72version_pairs_out:
                  network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)],\
                  cict_version=['v2'])
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_sergio_deepdrim72version_pairs_out
+rule beeline_sergio3_deepdrim72version_pairs_out:
+   input: expand('inputs_beeline2/{exp_dir}/net{network_i}/DEEPDRIM72_{cict_version}/training_pairsDEEPDRIM72_{cict_version}.txt',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)],\
+                 cict_version=['ewMIshrink','ewMIshrink_RFmaxdepth10_RFntrees20'])
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_sergio3_deepdrim72version_pairs_out
 
 # Generate prediction pairs data for DEEPDRIM,DEEPDRIM5,DEEPDRIM6 using outgoing edges for TFs in the expression data
 rule beeline_sergio_deepdrimXpred_pairs:
@@ -1077,10 +1266,10 @@ rule beeline_sergio_deepdrimXpred_pairs_out:
 rule beeline_sergio_deepdrimYpred_pairs:
    input: expfile='{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/ExpressionData.csv',\
           config='config-files-split/config_SERGIO_{exp_name}_split/net{network_i}/{dd_version}/config.yaml'
-   output: pairout="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{dd_version,DEEPDRIM(7|9)}/predict_pairs{dd_version}.txt",\
-           tfout="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{dd_version,DEEPDRIM(7|9)}/predict_pairs{dd_version}.txtTF_divide_pos.txt",\
-           nameout="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{dd_version,DEEPDRIM(7|9)}/predict_pairs{dd_version}.txtGeneName_map.txt"
-   log: "{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{dd_version,DEEPDRIM(7|9)}/predict_pairs{dd_version}.log"
+   output: pairout="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{dd_version,DEEPDRIM7|DEEPDRIM9}/predict_pairs{dd_version}.txt",\
+           tfout="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{dd_version,DEEPDRIM7|DEEPDRIM9}/predict_pairs{dd_version}.txtTF_divide_pos.txt",\
+           nameout="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{dd_version,DEEPDRIM7|DEEPDRIM9}/predict_pairs{dd_version}.txtGeneName_map.txt"
+   log: "{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{dd_version}/predict_pairs{dd_version}.log"
    params: overlay="images_singularity_overlay/{dd_version}.ext3",\
            sif="images_singularity/{dd_version}.sif",\
            D="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{dd_version}",\
@@ -1091,12 +1280,12 @@ rule beeline_sergio_deepdrimYpred_pairs:
    threads: 1
    resources: mem_mb='16000', time='00:15:00', gpu=''
    shell: """
-     mkdir -p {params.D}
+     mkdir -p {params.D}; cp -n {input.expfile} {params.D}; 
      singularity exec \
         --no-home \
         --overlay {params.overlay}:ro \
         {params.sif} \
-        /bin/bash -c \"source /ext3/env.sh; conda activate DEEPDRIM; cd {params.D}; \
+        /bin/bash -c \"source /ext3/env.sh; conda activate DEEPDRIM; cd {params.D};
                        command time -v -o time_generate_pred_pairs.txt python /scratch/ch153/packages/DeepDRIM/hlab1/DeepDRIM/generate_pred_pairs_all.py -expr_file ExpressionData.csv -num_batches {params.num_batches} -label {params.label} > predict_pairsDEEPDRIM7.log 2>&1 \"
    """
 rule beeline_sergio_deepdrim7pred_pairs_out:
@@ -1104,6 +1293,12 @@ rule beeline_sergio_deepdrim7pred_pairs_out:
                  exp_dir=['SERGIO_DS4','SERGIO_DS5','SERGIO_DS6','SERGIO_DS7'],\
                  network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)])
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_sergio_deepdrim7pred_pairs_out
+rule beeline_sergio3_deepdrim7pred_pairs_out:
+   input: expand('inputs_beeline2/{exp_dir}/net{network_i}/DEEPDRIM7/predict_pairsDEEPDRIM7.txt',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)])
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_sergio3_deepdrim7pred_pairs_out
+
 
 # Link prediction pairs data for DEEPDRIM7_version, DEEPDRIM7x_version to DEEPDRIM7 prediction pairs
 rule beeline_sergio_deepdrimYpred_version_pairs:
@@ -1144,7 +1339,11 @@ rule beeline_sergio_deepdrim72pred_version_pairs_out:
                  cict_version=['v2'],\
                  exp_dir=['SERGIO_DS4','SERGIO_DS5','SERGIO_DS6','SERGIO_DS7'],\
                  network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)])
-
+rule beeline_sergio3_deepdrim72pred_version_pairs_out:
+   input: expand('inputs_beeline2/{exp_dir}/net{network_i}/DEEPDRIM72_{cict_version}/predict_pairsDEEPDRIM72_{cict_version}.txt',\
+                 cict_version=['ewMIshrink','ewMIshrink_RFmaxdepth10_RFntrees20'],\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)])
    
 ruleorder: beeline_sergio_deepdrim_pairs > beeline_exp_deepdrim5_pairs
 ruleorder: beeline_sergio_deepdrim6_pairs > beeline_exp_deepdrim6_pairs
@@ -1225,8 +1424,62 @@ rule beeline_sergio_inferelator3X_version_input_out:
                  network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)],\
                  inf3x=['INFERELATOR3{i}'.format(i=i) for i in [9,10]],\
                  cict_version=['v2'])
-
+rule beeline_sergio3_inferelator3X_version_input_out:
+   input: expand('inputs_beeline2/{exp_dir}/net{network_i}/{inf3x}_{cict_version}/ExpressionData-Genes.tsv',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)],\
+                 inf3x=['INFERELATOR3{i}'.format(i=i) for i in [4,8]],\
+                 cict_version=['ewMIshrink','ewMIshrink_RFmaxdepth10_RFntrees20']) + \
+          expand('inputs_beeline2/{exp_dir}/net{network_i}_sh{dsh}_perc{dp}/{inf3x}_{cict_version}/ExpressionData-Genes.tsv',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)],dsh=[6.5],dp=[10,30,50,70,80],\
+                 inf3x=['INFERELATOR3{i}'.format(i=i) for i in [4,8]],\
+                 cict_version=['ewMIshrink','ewMIshrink_RFmaxdepth10_RFntrees20'])
    
+# Generate input files for Inferelator3 benchmarking algorithms (SCENIC_version and CellOracle_version) using all genes in the expression data as regulators and the corresponding CICT_version training and test sets
+rule beeline_sergio_inf3rel_version_input:
+   input: expfile='{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/ExpressionData.csv',\
+          netfile='{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/refNetwork.csv',\
+          netfile_cicttrain="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/CICT_{cict_version}/cictTrain.csv",\
+          netfile_cicttest="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/CICT_{cict_version}/cictTest.csv",\
+          nettf_file="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/refNetwork-TFs.csv"
+   output: regout="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{inf3rel,SCENIC|CELLORACLE}_{cict_version}/ExpressionData-Genes.tsv",\
+           regout2="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{inf3rel,SCENIC|CELLORACLE}_{cict_version}/refNetwork-TFs.tsv",\
+           netout="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{inf3rel,SCENIC|CELLORACLE}_{cict_version}/refNetwork.tsv",\
+           netout_prior="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{inf3rel,SCENIC|CELLORACLE}_{cict_version}/cictPositive.tsv",\
+           netout_prior2="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{inf3rel,SCENIC|CELLORACLE}_{cict_version}/cictTrainPositive.tsv"
+   log: "{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{inf3rel}_{cict_version}/ExpressionData-Genes.log"
+   params: D="{exp_input_dir}/SERGIO_{exp_name}/net{network_i}/{inf3rel}_{cict_version}",\
+           jobname='blg_{exp_name}_net{network_i}_{inf3rel}_{cict_version}',\
+           clog_prefix='ExpressionData-Genes'
+   threads: 1
+   shell: """
+     mkdir -p {params.D}
+     awk -v FS=',' -v OFS='\\t' '{{ if (NR>1) {{ print $1 }} }}' {input.expfile} | sort -u > {output.regout}
+     cp {input.nettf_file} {output.regout2}
+     awk -v FS=',' -v OFS='\\t' '{{ $1=$1; print $0 }}' {input.netfile} > {output.netout}
+     awk -v FS='\\t' -v OFS='\\t' '{{ if (NR==1) {{ print $0 }} else if ($3==\"TRUE\") {{ print $0 }} }}' {input.netfile_cicttrain} {input.netfile_cicttest} > {output.netout_prior}
+     awk -v FS='\\t' -v OFS='\\t' '{{ if (NR==1) {{ print $0 }} else if ($3==\"TRUE\") {{ print $0 }} }}' {input.netfile_cicttrain} > {output.netout_prior2}
+   """
+
+rule beeline_sergio_inf3rel_version_input_out:
+   input: expand('inputs_beeline2/{exp_dir}/net{network_i}/{inf3rel}_{cict_version}/ExpressionData-Genes.tsv',\
+                 exp_dir=['SERGIO_DS4','SERGIO_DS5','SERGIO_DS6','SERGIO_DS7'],\
+                 network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)],\
+                 inf3rel=['SCENIC','CELLORACLE'],\
+                 cict_version=['v2'])
+rule beeline_sergio3_inf3rel_version_input_out:
+   input: expand('inputs_beeline2/{exp_dir}/net{network_i}/{inf3rel}_{cict_version}/ExpressionData-Genes.tsv',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)],\
+                 inf3rel=['SCENIC','CELLORACLE'],\
+                 cict_version=['ewMIshrink']) +\
+          expand('inputs_beeline2/{exp_dir}/net{network_i}_sh{dsh}_perc{dp}/{inf3rel}_{cict_version}/ExpressionData-Genes.tsv',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)],dsh=[6.5],dp=[10,30,50,70,80],\
+                 inf3rel=['SCENIC','CELLORACLE'],\
+                 cict_version=['ewMIshrink'])
+
 def get_tf_num(wildcards,tfdiv_file):
     with open(tfdiv_file.format(**wildcards),'r') as fp:
         tf_num = len(fp.readlines()) - 1
@@ -1316,6 +1569,17 @@ rule beeline_deepdrim72v2_repr_out:
                  exp_dir=['SERGIO_DS4','SERGIO_DS5','SERGIO_DS6','SERGIO_DS7'],\
                  network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)])
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_deepdrim72v2_repr_out
+rule beeline_deepdrim72ewmishrink_repr_out:
+   input: expand('inputs_beeline2/{exp_dir}/net{network_i}/DEEPDRIM72_ewMIshrink/representation_train.out',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)])
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_deepdrim72ewmishrink_repr_out
+rule beeline_deepdrim72ewmishrinkrf1_repr_out:
+   input: expand('inputs_beeline2/{exp_dir}/net{network_i}/DEEPDRIM72_ewMIshrink_RFmaxdepth10_RFntrees20/representation_train.out',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)])
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_deepdrim72ewmishrinkrf1_repr_out
+
 rule beeline_deepdrim73v2_repr_out:
    input: expand('inputs_beeline2/{ds.exp_dir}/{ds.dataset}/DEEPDRIM73_v2/representation_train.out',\
                  ds=EXP_PARAM_DF[(EXP_PARAM_DF.exp_dir.isin(['L0_lofgof','L1_lofgof','L2_lofgof'])) & (EXP_PARAM_DF.dataset=='mESC')].groupby(['exp_dir','dataset']).count().reset_index().itertuples())
@@ -1327,7 +1591,7 @@ rule beeline_deepdrimYpred_repr:
           pairs_file="{exp_input_dir}/{exp_dir}/{dataset}/{dd_version}/predict_pairs{dd_version}.txt",\
           tfdiv_file="{exp_input_dir}/{exp_dir}/{dataset}/{dd_version}/predict_pairs{dd_version}.txtTF_divide_pos.txt",\
           genename_file="{exp_input_dir}/{exp_dir}/{dataset}/{dd_version}/predict_pairs{dd_version}.txtGeneName_map.txt"
-   output: '{exp_input_dir}/{exp_dir}/{dataset}/{dd_version,DEEPDRIM[7|8]}/representation_predict.out'
+   output: '{exp_input_dir}/{exp_dir}/{dataset}/{dd_version,DEEPDRIM7|DEEPDRIM8}/representation_predict.out'
    log: '{exp_input_dir}/{exp_dir}/{dataset}/{dd_version}/representation_predict.log'
    params: overlay="images_singularity_overlay/{dd_version}.ext3",\
            sif="images_singularity/{dd_version}.sif",\
@@ -1337,7 +1601,7 @@ rule beeline_deepdrimYpred_repr:
            jobname='blg_{dataset}_{dd_version}',\
            clog_prefix='representation_predict'
    threads: 1
-   resources: mem_mb='64000', time='24:00:00', gpu=''
+   resources: mem_mb='16000', time='1:00:00', gpu=''
    shell: """
      mkdir -p {params.D}; rm -rf {params.D}/representation_predict
      singularity exec \
@@ -1363,6 +1627,12 @@ rule beeline_sergio_deepdrim7pred_repr_out:
                  exp_dir=['SERGIO_DS4','SERGIO_DS5','SERGIO_DS6','SERGIO_DS7'],\
                  network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)])
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_sergio_deepdrim7pred_repr_out
+rule beeline_sergio3_deepdrim7pred_repr_out:
+   input: expand('inputs_beeline2/{exp_dir}/net{network_i}/DEEPDRIM7/representation_predict.out',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)])
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_sergio3_deepdrim7pred_repr_out
+
 
 # Link prediction pairs representation for DEEPDRIM7_version, DEEPDRIM7x_version to DEEPDRIM7 prediction pairs
 rule beeline_deepdrimYpred_version_repr:
@@ -1409,6 +1679,11 @@ rule beeline_sergio_deepdrim72pred_version_repr_out:
    input: expand('inputs_beeline2/{exp_dir}/net{network_i}/DEEPDRIM72_{cict_version}/representation_predict.out',\
                  cict_version=['v2'],\
                  exp_dir=['SERGIO_DS4','SERGIO_DS5','SERGIO_DS6','SERGIO_DS7'],\
+                 network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)])
+rule beeline_sergio3_deepdrim72pred_version_repr_out:
+   input: expand('inputs_beeline2/{exp_dir}/net{network_i}/DEEPDRIM72_{cict_version}/representation_predict.out',\
+                 cict_version=['ewMIshrink','ewMIshrink_RFmaxdepth10_RFntrees20'],\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
                  network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)])
 
 def get_deepdrim_train_mem_mb(wildcards):
@@ -1571,7 +1846,6 @@ rule beeline_sergio_cict_out:
                     ofh.write('From %s to %s\n'%(ranked_edges_from,ranked_edges_to))
                 else:
                     print('%s does not exist.'%(ranked_edges_from))
-                          
 
 ##########################
 ### BEELINE run 
@@ -1579,9 +1853,9 @@ rule beeline_sergio_cict_out:
 # GRISLI 240000
 def get_run_mem_mb(wildcards):
     switcher = {
-        "L0": 128000,
-        "L1": 128000,
-        "L2": 128000,
+        "L0": 16000,
+        "L1": 16000,
+        "L2": 16000,
         "L0_ns": 128000,
         "L1_ns": 128000,
         "L2_ns": 128000,
@@ -1591,25 +1865,33 @@ def get_run_mem_mb(wildcards):
         "SERGIO_DS4":16000,
         "SERGIO_DS5":16000,
         "SERGIO_DS6":16000,
-        "SERGIO_DS7":16000
+        "SERGIO_DS7":16000,
+        "SERGIO_DS4-R1":16000,
+        "SERGIO_DS5-R1":16000,
+        "SERGIO_DS6-R1":16000,
+        "SERGIO_DS7-R1":16000
         }
     return switcher.get(wildcards.exp_dir, 8000)
 
 def get_run_time(wildcards):
     switcher = {
-        "L0": "6:00:00",
-        "L1": "6:00:00",
-        "L2": "6:00:00",
+        "L0": "1:00:00",
+        "L1": "1:00:00",
+        "L2": "1:00:00",
         "L0_ns": "6:00:00",
         "L1_ns": "6:00:00",
         "L2_ns": "6:00:00",
         "L0_lofgof": "8:00:00",
         "L1_lofgof": "8:00:00",
         "L2_lofgof": "8:00:00",
-        "SERGIO_DS4": "0:20:00",
-        "SERGIO_DS5": "0:20:00",
-        "SERGIO_DS6": "0:20:00",
-        "SERGIO_DS7": "0:20:00"
+        "SERGIO_DS4": "1:00:00",
+        "SERGIO_DS5": "1:00:00",
+        "SERGIO_DS6": "1:00:00",
+        "SERGIO_DS7": "1:00:00",
+        "SERGIO_DS4-R1": "0:20:00",
+        "SERGIO_DS5-R1": "0:20:00",
+        "SERGIO_DS6-R1": "0:20:00",
+        "SERGIO_DS7-R1": "0:20:00"
         }
     return switcher.get(wildcards.exp_dir, "03:00:00")
 
@@ -1622,12 +1904,14 @@ def get_run_gpu(wildcards):
         'DEEPDRIM8': '--gres=gpu:rtx8000:1',
         'DEEPDRIM72': '--gres=gpu:rtx8000:1',
         'DEEPDRIM72_v2': '--gres=gpu:rtx8000:1',
+        'DEEPDRIM72_ewMIshrink': '--gres=gpu:rtx8000:1',
+        'DEEPDRIM72_ewMIshrink_RFmaxdepth10_RFntrees20': '--gres=gpu:rtx8000:1',
         'DEEPDRIM73_v2': '--gres=gpu:rtx8000:1',
         }
     return switcher.get(wildcards.algorithm, '')
 
 # split config
-#parallel --dry-run "python generateSplitConfigs.py --config config-files/config_{}.yaml --config_split_dir config-files-split/config_{}_split --replace_existing" ::: L0 L0_ns L0_lofgof L1 L1_ns L1_lofgof L2 L2_ns L2_lofgof SERGIO_DS4 SERGIO_DS5 SERGIO_DS6 SERGIO_DS7
+#parallel --dry-run "python generateSplitConfigs.py --config config-files/config_{}.yaml --config_split_dir config-files-split/config_{}_split --replace_existing" ::: L0 L0_ns L0_lofgof L1 L1_ns L1_lofgof L2 L2_ns L2_lofgof SERGIO_DS4 SERGIO_DS5 SERGIO_DS6 SERGIO_DS7 SERGIO_DS4-R1 SERGIO_DS5-R1 SERGIO_DS6-R1 SERGIO_DS7-R1
 
 def beeline_run_input(wildcards):
     run_i = wildcards.get('run_i','')
@@ -1705,6 +1989,332 @@ rule beeline_run_sergio2_out:
                  algorithm=['INFERELATOR39_v2','INFERELATOR310_v2'])
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_run_sergio2_out
 
+#'CICT_v2','DEEPDRIM72_v2',
+#             'INFERELATOR38_v2','INFERELATOR34_v2',
+#             'GENIE3','GRNBOOST2',
+#             'LEAP','PIDC','PPCOR','SCNS','SCODE','SCRIBE','SINCERITIES','SINGE',
+#             'RANDOM'
+rule beeline_run_sergio3_out:
+   input: expand('outputs/{exp_dir}/net{network_i}/{algorithm}/rankedEdges.csv',\
+                 exp_dir=['SERGIO_DS4-R1'],\
+                 network_i=[str(i) for i in range(15)],\
+                 algorithm=['INFERELATOR34_ewMIshrink','INFERELATOR38_ewMIshrink','RANDOM']) +\
+          expand('outputs/{exp_dir}/net{network_i}_sh{dsh}_perc{dp}/{algorithm}/rankedEdges.csv',\
+                 exp_dir=['SERGIO_DS4-R1'],\
+                 network_i=[str(i) for i in range(15)],dsh=[6.5],dp=[10,30,50,70,80],\
+                 algorithm=['INFERELATOR34_ewMIshrink','INFERELATOR38_ewMIshrink','RANDOM']) +\
+          expand('outputs/{exp_dir}/net{network_i}/{algorithm}/rankedEdges.csv',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)],\
+                 algorithm=['SCNS'])+\
+#                 algorithm=['GENIE3','GRNBOOST2','LEAP','PIDC','PPCOR','SCNS','SCODE','SCRIBE','SINCERITIES','SINGE']) +\
+          expand('outputs/{exp_dir}/net{network_i}_sh{dsh}_perc{dp}/{algorithm}/rankedEdges.csv',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)],dsh=[6.5],dp=[80],\
+                 algorithm=['SCNS'])
+#                 algorithm=['GENIE3','GRNBOOST2','LEAP','PIDC','PPCOR','SCNS','SCODE','SCRIBE','SINCERITIES','SINGE'])
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_run_sergio3_out
+rule beeline_run_sergio4_out:
+   input: expand('outputs/{exp_dir}/net{network_i}/{algorithm}/rankedEdges.csv',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)],\
+                 algorithm=['DEEPDRIM72_ewMIshrink','DEEPDRIM72_ewMIshrink_RFmaxdepth10_RFntrees20'])+\
+          expand('outputs/{exp_dir}/net{network_i}_sh{dsh}_perc{dp}/{algorithm}/rankedEdges.csv',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)],dsh=[6.5],dp=[80],\
+                 algorithm=['DEEPDRIM72_ewMIshrink','DEEPDRIM72_ewMIshrink_RFmaxdepth10_RFntrees20'])
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_run_sergio4_out
+rule beeline_run_sergio5_out:
+   input: expand('outputs/{exp_dir}/net{network_i}/{algorithm}/rankedEdges.csv',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)],\
+                 algorithm=['INFERELATOR34_ewMIshrink_RFmaxdepth10_RFntrees20','INFERELATOR38_ewMIshrink_RFmaxdepth10_RFntrees20'])+\
+          expand('outputs/{exp_dir}/net{network_i}_sh{dsh}_perc{dp}/{algorithm}/rankedEdges.csv',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)],dsh=[6.5],dp=[10,30,50,70,80],\
+                 algorithm=['INFERELATOR34_ewMIshrink_RFmaxdepth10_RFntrees20','INFERELATOR38_ewMIshrink_RFmaxdepth10_RFntrees20'])
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_run_sergio5_out
+
+def get_gsrun_mem_mb(wildcards):
+    switcher = {
+        "L0": 16000,
+        "L1": 16000,
+        "L2": 16000,
+        "L0_ns": 16000,
+        "L1_ns": 16000,
+        "L2_ns": 16000,
+        "L0_lofgof": 16000,
+        "L1_lofgof": 16000,
+        "L2_lofgof": 16000,
+        "SERGIO_DS4":16000,
+        "SERGIO_DS5":16000,
+        "SERGIO_DS6":16000,
+        "SERGIO_DS7":16000,
+        "SERGIO_DS4-R1":16000,
+        "SERGIO_DS5-R1":16000,
+        "SERGIO_DS6-R1":16000,
+        "SERGIO_DS7-R1":16000
+        }
+    return switcher.get(wildcards.exp_dir, 8000)
+
+def get_gsrun_time(wildcards):
+    switcher = {
+        "L0": "5:00:00",
+        "L1": "5:00:00",
+        "L2": "5:00:00",
+        "L0_ns": "5:00:00",
+        "L1_ns": "5:00:00",
+        "L2_ns": "5:00:00",
+        "L0_lofgof": "5:00:00",
+        "L1_lofgof": "5:00:00",
+        "L2_lofgof": "5:00:00",
+        "SERGIO_DS4": "4:00:00",
+        "SERGIO_DS5": "4:00:00",
+        "SERGIO_DS6": "4:00:00",
+        "SERGIO_DS7": "4:00:00",
+        "SERGIO_DS4-R1": "2:00:00",
+        "SERGIO_DS5-R1": "2:00:00",
+        "SERGIO_DS6-R1": "2:00:00",
+        "SERGIO_DS7-R1": "2:00:00"
+        }
+    return switcher.get(wildcards.exp_dir, "03:00:00")
+
+rule beeline_gsrun:# these algorithms run grid search of random seeds, with outputs in subfolders random_seed_x
+    input: unpack(beeline_run_input)
+    output: '{outputs_dir,[^/]+}/{exp_dir,[^/]+}/{dataset,[^/]+}/{algorithm}/rankedEdges_gs.out'
+    log: '{outputs_dir}/{exp_dir}/{dataset}/{algorithm}/rankedEdges_gs.log'
+    params: D="{outputs_dir}/{exp_dir}/{dataset}/{algorithm}",\
+            jobname="blr_{exp_dir}-{dataset}-{algorithm}",\
+            clog_prefix="rankedEdges_gs"
+    threads: 1
+    resources: mem_mb=get_gsrun_mem_mb, time=get_gsrun_time, gpu=get_run_gpu
+    envmodules: "anaconda3/2020.07"
+    shell: """
+        mkdir -p {params.D}; find {params.D} -type f ! -name {params.clog_prefix}.slurm-out -delete
+        python BLRunner.py --config {input.config} > {log} 2>&1
+        touch {output}
+    """
+rule beeline_gsrun_out:
+   input: expand('outputs/{exp_dir}/{dataset}/{algorithm}/rankedEdges_gs.out',\
+                 exp_dir=['L0','L1','L2'],\
+                 dataset=DATASET_PARAMS['cs']['dataset'],\
+                 algorithm=['SCENICDB','CELLORACLEDB'])
+#                 algorithm=['CELLORACLE_v2','SCENIC_v2'])
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_gsrun_out
+rule beeline_gsrun_ns_out:
+   input: expand('outputs/{exp_dir}/{dataset}/{algorithm}/rankedEdges_gs.out',\
+                 exp_dir=['L0_ns','L1_ns','L2_ns'],\
+                 dataset=DATASET_PARAMS['ns']['dataset'],\
+                 algorithm=['SCENICDB','CELLORACLEDB'])
+#                 algorithm=['CELLORACLE_v2','SCENIC_v2'])
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_gsrun_ns_out
+rule beeline_gsrun_lofgof_out:
+   input: expand('outputs/{exp_dir}/{dataset}/{algorithm}/rankedEdges_gs.out',\
+                 exp_dir=['L0_lofgof','L1_lofgof','L2_lofgof'],\
+                 dataset=DATASET_PARAMS['lofgof']['dataset'],\
+                 algorithm=['SCENICDB','CELLORACLEDB'])
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_gsrun_lofgof_out
+rule beeline_gsrun_sergio_out:
+   input: expand('outputs/{exp_dir}/net{network_i}/{algorithm}/rankedEdges_gs.out',\
+                 exp_dir=['SERGIO_DS4','SERGIO_DS5','SERGIO_DS6','SERGIO_DS7'],\
+                 network_i=[str(i) for i in range(15)]+[str(i)+'_sh6.5_perc80' for i in range(15)],\
+                 algorithm=['CELLORACLE_v2','SCENIC_v2'])
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_gsrun_sergio_out
+rule beeline_gsrun_sergio3_out:
+   input: expand('outputs/{exp_dir}/net{network_i}/{algorithm}/rankedEdges_gs.out',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)],\
+                 algorithm=['SCENIC_ewMIshrink']) +\
+          expand('outputs/{exp_dir}/net{network_i}_sh{dsh}_perc{dp}/{algorithm}/rankedEdges_gs.out',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)],dsh=[6.5],dp=[10,30,50,70,80],\
+                 algorithm=['SCENIC_ewMIshrink'])
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_gsrun_sergio3_out
+
+def get_cict_calc_mem_mb(wildcards):
+    switcher = {
+        "SERGIO_DS4-R1":16000,
+        "SERGIO_DS5-R1":16000,
+        "SERGIO_DS6-R1":16000,
+        "SERGIO_DS7-R1":16000
+        }
+    return switcher.get(wildcards.exp_dir, 8000)
+
+def get_cict_calc_time(wildcards):
+    switcher = {
+        "SERGIO_DS4-R1": "0:10:00",
+        "SERGIO_DS5-R1": "0:10:00",
+        "SERGIO_DS6-R1": "0:10:00",
+        "SERGIO_DS7-R1": "0:10:00"
+        }
+    return switcher.get(wildcards.exp_dir, "00:10:00")
+
+# Calculate CICT raw edge weights by each network in each experiment
+rule beeline_cict3_calc:
+    input: unpack(beeline_run_input)
+    output: '{outputs_dir,[^/]+}/{exp_dir,[^/]+}/{dataset,[^/]+}/{algorithm,CICT_v3}{run_i,(/run_[0-9]+)?}/rawEdges.csv'
+    log: '{outputs_dir}/{exp_dir}/{dataset}/{algorithm}{run_i}/rawEdges.log'
+    params: overlay="images_singularity_overlay/{algorithm}.ext3",\
+            sif="images_singularity/{algorithm}.sif",\
+            D="{outputs_dir}/{exp_dir}/{dataset}/{algorithm}{run_i}",\
+            jobname="blr_{exp_dir}-{dataset}-{algorithm}",\
+            clog_prefix="rawEdges"
+    threads: 1
+    resources: mem_mb=get_cict_calc_mem_mb, time=get_cict_calc_time, gpu=''
+    shell: """
+        mkdir -p {params.D};  find {params.D} -type f ! -name {params.clog_prefix}.slurm-out -delete
+        singularity exec \
+           --no-home \
+           --overlay {params.overlay} \
+           {params.sif} \
+           /bin/bash -c \"source /ext3/env.sh; conda activate CICT_RENV; cd Algorithms/CICT; \
+                          command time -v -o ../../{params.D}/time_calc_edges.txt Rscript runCICTEval2.R calcEdges {input} TRUE > ../../{log} 2>&1; \
+                          conda deactivate \" 
+        cp {wildcards.outputs_dir}/{wildcards.exp_dir}/{wildcards.dataset}/rawEdges.csv {params.D}/rawEdges.csv
+    """
+
+rule beeline_cict3_calc_sergio3_out:
+   input: expand('outputs/{exp_dir}/net{network_i}/CICT_v3/rawEdges.csv',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)]) +\
+          expand('outputs/{exp_dir}/net{network_i}_sh{dsh}_perc{dp}/CICT_v3/rawEdges.csv',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)],dsh=[6.5],dp=[10,30,50,70,80])
+#snakemake -s Snakefile --jobs=1 --profile snakefiles/profiles/slurm beeline_cict3_calc_sergio3_out
+
+def get_cict_calc2_mem_mb(wildcards):
+    switcher = {
+        "SERGIO_DS4-R1":16000,
+        "SERGIO_DS5-R1":16000,
+        "SERGIO_DS6-R1":16000,
+        "SERGIO_DS7-R1":16000
+        }
+    return switcher.get(wildcards.exp_dir, 8000)
+
+def get_cict_calc2_time(wildcards):
+    switcher = {
+        "SERGIO_DS4-R1": "3:00:00",
+        "SERGIO_DS5-R1": "3:00:00",
+        "SERGIO_DS6-R1": "3:00:00",
+        "SERGIO_DS7-R1": "3:00:00"
+        }
+    return switcher.get(wildcards.exp_dir, "00:10:00")
+
+# Calculate CICT raw edge weights by each experiment  
+rule beeline_cict3_calc2:
+    input: 'config-files/config_{exp_dir}.yaml'
+    output: '{outputs_dir,[^/]+}/{exp_dir,[^/]+}/{algorithm,CICT_v3}_rawEdges.out'
+    log: '{outputs_dir}/{exp_dir}/{algorithm}_rawEdges.log'
+    params: overlay="images_singularity_overlay/{algorithm}.ext3",\
+            sif="images_singularity/{algorithm}.sif",\
+            D="{outputs_dir}/{exp_dir}",\
+            jobname="blr_{exp_dir}-{algorithm}",\
+            clog_prefix="{algorithm}_rawEdges"
+    threads: 8
+    resources: mem_mb=get_cict_calc2_mem_mb, time=get_cict_calc2_time, gpu=''
+    shell: """
+        mkdir -p {params.D}
+        singularity exec \
+           --no-home \
+           --overlay {params.overlay} \
+           {params.sif} \
+           /bin/bash -c \"source /ext3/env.sh; conda activate CICT_RENV; cd Algorithms/CICT; \
+                          command time -v -o ../../{params.D}/{wildcards.algorithm}_time_calc_edges.txt Rscript runCICTEval2.R calcEdges {input} TRUE > ../../{log} 2>&1; \
+                          conda deactivate \"
+        touch {output}
+    """
+
+rule beeline_cict3_calc2_sergio3_out:
+   input: expand('outputs/{exp_dir}/CICT_v3_rawEdges.out',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'])
+#snakemake -s Snakefile --jobs=1 --profile snakefiles/profiles/slurm beeline_cict3_calc2_sergio3_out
+rule beeline_cict3_calc2_sergio3_clean:
+   shell: "rm {rules.beeline_cict3_calc2_sergio3_out.input}"
+
+
+rule beeline_cict3_run:
+    input: unpack(beeline_run_input)
+    output: '{outputs_dir,[^/]+}/{exp_dir,[^/]+}/{dataset,[^/]+}/{algorithm,CICT_v3}{run_i,(/run_[0-9]+)?}/rankedEdges.csv'
+    log: '{outputs_dir}/{exp_dir}/{dataset}/{algorithm}{run_i}/rankedEdges.log'
+    params: overlay="images_singularity_overlay/{algorithm}.ext3",\
+            sif="images_singularity/{algorithm}.sif",\
+            D="{outputs_dir}/{exp_dir}/{dataset}/{algorithm}{run_i}",\
+            jobname="blr_{exp_dir}-{dataset}-{algorithm}",\
+            clog_prefix="rankedEdges"
+    threads: 1
+    resources: mem_mb=get_run_mem_mb, time=get_run_time, gpu=get_run_gpu
+    shell: """
+        mkdir -p {params.D};
+        singularity exec \
+           --no-home \
+           --overlay {params.overlay} \
+           {params.sif} \
+           /bin/bash -c \"source /ext3/env.sh; conda activate CICT_RENV; cd Algorithms/CICT; \
+                          command time -v -o ../../{params.D}/time_cict_run.txt Rscript runCICTEval2.R runCICT {input} TRUE > ../../{log} 2>&1; \
+                          conda deactivate \" 
+    """
+rule beeline_cict3_run_sergio3_out:
+   input: expand('outputs/{exp_dir}/net{network_i}/CICT_v3/rankedEdges.csv',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(1)]) +\
+          expand('outputs/{exp_dir}/net{network_i}_sh{dsh}_perc{dp}/CICT_v3/rankedEdges.csv',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(1)],dsh=[6.5],dp=[10,30,50,70,80])
+#snakemake -s Snakefile --jobs=1 --profile snakefiles/profiles/slurm beeline_cict3_run_sergio3_out
+
+def get_cict_run2_mem_mb(wildcards):
+    switcher = {
+        "SERGIO_DS4-R1":16000,
+        "SERGIO_DS5-R1":16000,
+        "SERGIO_DS6-R1":16000,
+        "SERGIO_DS7-R1":16000
+        }
+    return switcher.get(wildcards.exp_dir, 8000)
+
+def get_cict_run2_time(wildcards):
+    switcher = {
+        "SERGIO_DS4-R1": "3:00:00",
+        "SERGIO_DS5-R1": "3:00:00",
+        "SERGIO_DS6-R1": "3:00:00",
+        "SERGIO_DS7-R1": "3:00:00"
+        }
+    return switcher.get(wildcards.exp_dir, "00:10:00")
+
+# Run CICT by each experiment  
+rule beeline_cict3_run2:
+    input: 'config-files/config_{exp_dir}.yaml'
+    output: '{outputs_dir,[^/]+}/{exp_dir,[^/]+}/{algorithm,CICT_v3}_rankedEdges.out'
+    log: '{outputs_dir}/{exp_dir}/{algorithm}_rankedEdges.log'
+    params: overlay="images_singularity_overlay/{algorithm}.ext3",\
+            sif="images_singularity/{algorithm}.sif",\
+            D="{outputs_dir}/{exp_dir}",\
+            jobname="blr_{exp_dir}-{algorithm}",\
+            clog_prefix="{algorithm}_rankedEdges"
+    threads: 8
+    resources: mem_mb=get_cict_run2_mem_mb, time=get_cict_run2_time, gpu=''
+    shell: """
+        mkdir -p {params.D}
+        singularity exec \
+           --no-home \
+           --overlay {params.overlay} \
+           {params.sif} \
+           /bin/bash -c \"source /ext3/env.sh; conda activate CICT_RENV; cd Algorithms/CICT; \
+                          command time -v -o ../../{params.D}/{wildcards.algorithm}_time_cict_run.txt Rscript runCICTEval2.R runCICT {input} TRUE > ../../{log} 2>&1; \
+                          conda deactivate \"
+        touch {output}
+    """
+
+rule beeline_cict3_run2_sergio3_out:
+   input: expand('outputs/{exp_dir}/CICT_v3_rankedEdges.out',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'])
+#snakemake -s Snakefile --jobs=1 --profile snakefiles/profiles/slurm beeline_cict3_run2_sergio3_out
+rule beeline_cict3_run2_sergio3_clean:
+   shell: "rm {rules.beeline_cict3_run2_sergio3_out.input}"
+
+
+##########################
+### BEELINE eval
+##########################
 def get_eval_mem_mb(wildcards):
     switcher = {
         "epr": 16000,
@@ -1718,19 +2328,27 @@ def get_eval_mem_mb(wildcards):
 
 def get_eval_time(wildcards):
     switcher = {
-        "L0": "0:10:00",
-        "L1": "0:10:00",
-        "L2": "0:10:00",
+        "L0": "0:30:00",
+        "L1": "0:30:00",
+        "L2": "0:30:00",
         "L0_ns": "0:10:00",
         "L1_ns": "0:10:00",
         "L2_ns": "0:10:00",
         "L0_lofgof": "0:10:00",
         "L1_lofgof": "0:10:00",
         "L2_lofgof": "0:10:00",
-        "SERGIO_DS4": "0:10:00",
-        "SERGIO_DS5": "0:10:00",
-        "SERGIO_DS6": "0:10:00",
-        "SERGIO_DS7": "0:10:00"
+        "SERGIO_DS4": "0:02:00",
+        "SERGIO_DS5": "0:02:00",
+        "SERGIO_DS6": "0:02:00",
+        "SERGIO_DS7": "0:02:00",
+        "SERGIO_DS4-R1": "0:05:00",
+        "SERGIO_DS5-R1": "0:05:00",
+        "SERGIO_DS6-R1": "0:05:00",
+        "SERGIO_DS7-R1": "0:05:00",
+        "NODROPOUT_SERGIO_DS4-R1": "0:02:00",
+        "NODROPOUT_SERGIO_DS5-R1": "0:02:00",
+        "NODROPOUT_SERGIO_DS6-R1": "0:02:00",
+        "NODROPOUT_SERGIO_DS7-R1": "0:02:00"
         }
     return switcher.get(wildcards.exp_dir, "03:00:00")
 
@@ -1774,7 +2392,64 @@ rule beeline_nlines_sergio_out:
                  network_i=[str(i)+'_sh6.5_perc80' for i in range(15)],\
                  algorithm=[alg for alg in ALGORITHMS if alg not in ['CICT_v2.back','DEEPDRIM','DEEPDRIM5','DEEPDRIM6']])
 
-    
+rule beeline_nlines_sergio3_out:
+   input: expand('outputs/{exp_dir}/net{network_i}/{algorithm}/rankedEdges.nLines',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=range(15),\
+                 algorithm=['CICT_ewMIshrink','INFERELATOR34_ewMIshrink','INFERELATOR38_ewMIshrink',\
+                            'CICT_ewMIshrink_RFmaxdepth5',\
+                            'CICT_ewMIshrink_RFmaxdepth10_RFntrees20',\
+                            'INFERELATOR34_ewMIshrink_RFmaxdepth10_RFntrees20',\
+                            'INFERELATOR38_ewMIshrink_RFmaxdepth10_RFntrees20',\
+                            'RANDOM']) +\
+          expand('outputs/{exp_dir}/net{network_i}_sh{dsh}_perc{dp}/{algorithm}/rankedEdges.nLines',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)],dsh=[6.5],dp=[10,30,50,70,80],\
+                 algorithm=['CICT_ewMIshrink','INFERELATOR34_ewMIshrink','INFERELATOR38_ewMIshrink',\
+                            'CICT_ewMIshrink_RFmaxdepth5',\
+                            'CICT_ewMIshrink_RFmaxdepth10_RFntrees20',\
+                            'INFERELATOR34_ewMIshrink_RFmaxdepth10_RFntrees20',\
+                            'INFERELATOR38_ewMIshrink_RFmaxdepth10_RFntrees20',\
+                            'RANDOM']) +\
+          expand('outputs/{exp_dir}/net{network_i}/{algorithm}/rankedEdges.nLines',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                                   network_i=range(15),\
+                 algorithm=['DEEPDRIM72_ewMIshrink_RFmaxdepth10_RFntrees20',\
+                     'GENIE3','GRNBOOST2','LEAP','PIDC','PPCOR','SCNS','SCODE','SCRIBE','SINCERITIES','SINGE']) +\
+          expand('outputs/{exp_dir}/net{network_i}_sh{dsh}_perc{dp}/{algorithm}/rankedEdges.nLines',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)],dsh=[6.5],dp=[80],\
+                 algorithm=['DEEPDRIM72_ewMIshrink_RFmaxdepth10_RFntrees20',\
+                     'GENIE3','GRNBOOST2','LEAP','PIDC','PPCOR','SCNS','SCODE','SCRIBE','SINCERITIES','SINGE'])
+
+
+
+rule beeline_nlines_sergio4_out:
+   input: expand('outputs/{exp_dir}/net{network_i}/{algorithm}/rankedEdges.nLines',\
+                 exp_dir=['NODROPOUT_SERGIO_DS4-R1','NODROPOUT_SERGIO_DS5-R1','NODROPOUT_SERGIO_DS6-R1','NODROPOUT_SERGIO_DS7-R1'],\
+                 network_i=range(15),\
+                 algorithm=['CICT_Pearson_RFmaxdepth5_NODROPOUT']),\
+
+   
+rule beeline_gsnlines_out:
+   input: expand('outputs/{exp_dir}/{dataset}/{algorithm}/random_seed_{seed}/rankedEdges.nLines',\
+                 exp_dir=['L0','L1','L2'],\
+                 dataset=DATASET_PARAMS['cs']['dataset'],\
+                 algorithm=['SCENICDB','CELLORACLEDB'],\
+                 seed=range(42,52))
+rule beeline_gsnlines_ns_out:
+   input: expand('outputs/{exp_dir}/{dataset}/{algorithm}/random_seed_{seed}/rankedEdges.nLines',\
+                 exp_dir=['L0_ns','L1_ns','L2_ns'],\
+                 dataset=DATASET_PARAMS['ns']['dataset'],\
+                 algorithm=['SCENICDB','CELLORACLEDB'],\
+                 seed=range(42,52))
+rule beeline_gsnlines_lofgof_out:
+   input: expand('outputs/{exp_dir}/{dataset}/{algorithm}/random_seed_{seed}/rankedEdges.nLines',\
+                 exp_dir=['L0_lofgof','L1_lofgof','L2_lofgof'],\
+                 dataset=DATASET_PARAMS['lofgof']['dataset'],\
+                 algorithm=['SCENICDB','CELLORACLEDB'],\
+                 seed=range(42,52))
+
 rule beeline_eval:
     input: netout=beeline_eval_input
     output: 'outputs_eval/{exp_dir,[^/]+}/{dataset,[^/]+}/{algorithm}{run_i,(/run_[0-9]+)?}/{exp_dir}-{metric}.out'
@@ -1798,7 +2473,6 @@ rule beeline_eval:
     python BLEvaluator.py --config {params.config} --{wildcards.metric} --output_dir {params.output_dir} --output_prefix {params.output_prefix} > {log} 2>&1 \" 
     touch {output}
     """
-#; find {params.D} -type f ! -name {params.clog_prefix}.slurm-out -delete
 
 rule beeline_eval_out:
    input: expand('outputs_eval/{exp_dir}/{dataset}/{algorithm}/{exp_dir}-{metric}.out',\
@@ -1852,4 +2526,99 @@ rule beeline_eval_sergio_out:
 #snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_eval_sergio_out
 rule beeline_eval_sergio_out2:
    shell: "echo {rules.beeline_eval_sergio_out.input}"
-   
+rule beeline_eval_sergio2_out:
+   input: expand('outputs_eval/{exp_dir}/net{network_i}/{algorithm}/{exp_dir}-{metric}.out',\
+                 exp_dir=['SERGIO_DS4','SERGIO_DS5','SERGIO_DS6','SERGIO_DS7'],\
+                 network_i=range(15),\
+                 algorithm=['CICT_v2'],\
+                 metric=['epr','auc4','pauc4'])+\
+          expand('outputs_eval/{exp_dir}/net{network_i}/{algorithm}/{exp_dir}-{metric}.out',\
+                 exp_dir=['SERGIO_DS4','SERGIO_DS5','SERGIO_DS6','SERGIO_DS7'],\
+                 network_i=[str(i)+'_sh6.5_perc80' for i in range(15)],\
+                 algorithm=['CICT_v2'],\
+                 metric=['epr','auc4','pauc4'])
+                 #algorithm=[alg for alg in ALGORITHMS if alg not in ['DEEPDRIM','DEEPDRIM5']],\
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_eval_sergio2_out
+
+rule beeline_eval_sergio3_out:# Revision 1 selected algorithms
+   input: expand('outputs_eval/{exp_dir}/net{network_i}/{algorithm}/{exp_dir}-{metric}.out',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)],\
+                 algorithm=['CICT_ewMIshrink','INFERELATOR34_ewMIshrink','INFERELATOR38_ewMIshrink',\
+                            'CICT_ewMIshrink_RFmaxdepth5',\
+                            'CICT_ewMIshrink_RFmaxdepth10_RFntrees20',\
+                            'INFERELATOR34_ewMIshrink_RFmaxdepth10_RFntrees20',\
+                            'INFERELATOR38_ewMIshrink_RFmaxdepth10_RFntrees20',\
+                            'RANDOM'],\
+                 metric=['epr','auc4','pauc4']) +\
+          expand('outputs_eval/{exp_dir}/net{network_i}_sh{dsh}_perc{dp}/{algorithm}/{exp_dir}-{metric}.out',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)],dsh=[6.5],dp=[10,30,50,70,80],\
+                 algorithm=['CICT_ewMIshrink','INFERELATOR34_ewMIshrink','INFERELATOR38_ewMIshrink',\
+                            'CICT_ewMIshrink_RFmaxdepth5',\
+                            'CICT_ewMIshrink_RFmaxdepth10_RFntrees20',\
+                            'INFERELATOR34_ewMIshrink_RFmaxdepth10_RFntrees20',\
+                            'INFERELATOR38_ewMIshrink_RFmaxdepth10_RFntrees20',\
+                            'RANDOM'],\
+                 metric=['epr','auc4','pauc4']) + \
+          expand('outputs_eval/{exp_dir}/net{network_i}/{algorithm}/{exp_dir}-{metric}.out',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)],\
+                 algorithm=['DEEPDRIM72_ewMIshrink_RFmaxdepth10_RFntrees20',\
+                     'GENIE3','GRNBOOST2','LEAP','PIDC','PPCOR','SCODE','SCRIBE','SINCERITIES','SINGE'],\
+                 metric=['epr','auc','auc3','auc4','pauc4']) +\
+#                 algorithm=['SCNS'])+\
+          expand('outputs_eval/{exp_dir}/net{network_i}_sh{dsh}_perc{dp}/{algorithm}/{exp_dir}-{metric}.out',\
+                 exp_dir=['SERGIO_DS4-R1','SERGIO_DS5-R1','SERGIO_DS6-R1','SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)],dsh=[6.5],dp=[80],\
+                 algorithm=['DEEPDRIM72_ewMIshrink_RFmaxdepth10_RFntrees20',
+                            'GENIE3','GRNBOOST2','LEAP','PIDC','PPCOR','SCODE','SCRIBE','SINCERITIES','SINGE'],\
+                 metric=['epr','auc','auc3','auc4','pauc4'])
+#                 algorithm=['SCNS'])
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_eval_sergio3_out
+rule beeline_eval_sergio4_out: # Graeme's runs with Pearson correlation on the SERGIO no dropout data
+   input: expand('outputs_eval/{exp_dir}/net{network_i}/{algorithm}/{exp_dir}-{metric}.out',\
+                 exp_dir=['NODROPOUT_SERGIO_DS4-R1','NODROPOUT_SERGIO_DS5-R1','NODROPOUT_SERGIO_DS6-R1','NODROPOUT_SERGIO_DS7-R1'],\
+                 network_i=[str(i) for i in range(15)],\
+                 algorithm=['CICT_Pearson_RFmaxdepth5_NODROPOUT','CICT_Pearson_RFmaxdepth10_RFntrees20_NODROPOUT'],\
+                 metric=['epr','auc4','pauc4'])
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_eval_sergio4_out
+rule beeline_gseval_out:
+   input: expand('outputs_eval/{exp_dir}/{dataset}/{algorithm}/random_seed_{seed}/{exp_dir}-{metric}.out',\
+                 exp_dir=['L0','L1','L2'],\
+                 dataset=DATASET_PARAMS['cs']['dataset'],\
+                 algorithm=['SCENICDB','CELLORACLEDB'],\
+                 seed=range(42,52),\
+                 metric=['epr','auc4','pauc4'])
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_gseval_out
+rule beeline_gseval_ns_out:
+   input: expand('outputs_eval/{exp_dir}/{dataset}/{algorithm}/random_seed_{seed}/{exp_dir}-{metric}.out',\
+                 exp_dir=['L0_ns','L1_ns','L2_ns'],\
+                 dataset=DATASET_PARAMS['ns']['dataset'],\
+                 algorithm=['SCENICDB','CELLORACLEDB'],\
+                 seed=range(42,52),\
+                 metric=['epr','auc4','pauc4'])
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_gseval_ns_out
+rule beeline_gseval_lofgof_out:
+   input: expand('outputs_eval/{exp_dir}/{dataset}/{algorithm}/random_seed_{seed}/{exp_dir}-{metric}.out',\
+                 exp_dir=['L0_lofgof','L1_lofgof','L2_lofgof'],\
+                 dataset=DATASET_PARAMS['lofgof']['dataset'],\
+                 algorithm=['SCENICDB','CELLORACLEDB'],\
+                 seed=range(42,52),\
+                 metric=['epr','auc4','pauc4'])
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_gseval_lofgof_out
+
+rule beeline_gseval_sergio3_out:
+   input: expand('outputs_eval/{exp_dir}/net{network_i}/{algorithm}/random_seed_{seed}/{exp_dir}-{metric}.out',\
+                 exp_dir=['SERGIO_DS4-R1'],\
+                 network_i=[str(i) for i in range(1)],\
+                 algorithm=['SCENIC_ewMIshrink'],\
+                 seed=range(42,45),\
+                 metric=['epr','auc','auc3','auc4','pauc4']) +\
+          expand('outputs_eval/{exp_dir}/net{network_i}_sh{dsh}_perc{dp}/{algorithm}/random_seed_{seed}/{exp_dir}-{metric}.out',\
+                 exp_dir=['SERGIO_DS4-R1'],\
+                 network_i=[str(i) for i in range(1)],dsh=[6.5],dp=[10,30,50,70,80],\
+                 algorithm=['SCENIC_ewMIshrink'],\
+                 seed=range(42,45),\
+                 metric=['epr','auc','auc3','auc4','pauc4'])
+#snakemake -s Snakefile --profile snakefiles/profiles/slurm beeline_eval_sergio3gs_out
