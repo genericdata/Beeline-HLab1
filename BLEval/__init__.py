@@ -382,26 +382,27 @@ class BLEval(object):
                             total = len(self.input_settings.datasets), unit = " Datasets"):
             pathAnalysis(dataset, self.input_settings)
 
-                 
-    def computeEarlyPrec(self):
 
-        '''
-        For each algorithm-dataset combination,
-        this function computes the Early Precision values of the 
-        network formed using the predicted top-k edges.
+    # shhuang1 NOTE 2023/09/04: may be redundantly defined
+    # def computeEarlyPrec(self):
+
+    #     '''
+    #     For each algorithm-dataset combination,
+    #     this function computes the Early Precision values of the 
+    #     network formed using the predicted top-k edges.
         
-        :returns: 
-            A dataframe containing the early precision values 
-            for each algorithm-dataset combination.
+    #     :returns: 
+    #         A dataframe containing the early precision values 
+    #         for each algorithm-dataset combination.
 
-        '''
-        Eprec = {}
-        outDir = str(self.output_settings.base_dir) + \
-                 str(self.input_settings.datadir).split("inputs")[1] + "/"
-        for algo in tqdm(self.input_settings.algorithms, unit = " Algorithms"):
-            if algo[1]['should_run'] == True:
-                Eprec[algo[0]] = EarlyPrec(self, algo[0])
-        return pd.DataFrame(Eprec).T
+    #     '''
+    #     Eprec = {}
+    #     outDir = str(self.output_settings.base_dir) + \
+    #              str(self.input_settings.datadir).split("inputs")[1] + "/"
+    #     for algo in tqdm(self.input_settings.algorithms, unit = " Algorithms"):
+    #         if algo[1]['should_run'] == True:
+    #             Eprec[algo[0]] = EarlyPrec(self, algo[0])
+    #     return pd.DataFrame(Eprec).T
 
     def computeEarlyPrec(self):
 
