@@ -70,6 +70,7 @@ input_settings:
               supervised.train: [.3] #proportion of classification records used for training
               fp.fn.cost: [1/5]  #False positive to False Negative cost ratio for threshold identification
 
+
         - name: "CELLORACLE_v2"
           params: 
               should_run: [True]
