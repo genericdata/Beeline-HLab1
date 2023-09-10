@@ -212,6 +212,17 @@ input_settings:
               fp.fn.cost: [1/5]  #False positive to False Negative cost ratio for threshold identification
 
 
+        - name: "CELLORACLE_v2"
+          params: 
+              should_run: [True]
+              regulators: ['ExpressionData-Genes.tsv']
+              useGS: ['False']
+              usePrior: ['cictTrainPositive.tsv']
+              splitGSForCV: ['False']
+              CVSplitRatio: ['None']
+              randomSeedList: ['42,43,44,45,46,47,48,49,50,51']
+
+
         - name: "CNNC"
           params: 
               should_run: [True]
@@ -554,6 +565,19 @@ input_settings:
         - name: "RANDOM"
           params: 
               should_run: [True] #<===
+
+
+        - name: "SCENIC_v2"
+          params: 
+              should_run: [True]
+              regulators: ['ExpressionData-Genes.tsv']
+              useGS: ['False']
+              usePrior: ['cictTrainPositive.tsv']
+              splitGSForCV: ['False']
+              CVSplitRatio: ['None']
+              randomSeedList: ['42,43,44,45,46,47,48,49,50,51']
+              rankThreshold: ['None']
+              NESThreshold: ['1.0']
 
 
         - name: "SCODE"
