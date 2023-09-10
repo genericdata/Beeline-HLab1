@@ -1,5 +1,6 @@
 import os
 import argparse
+from copy import deepcopy
 from pathlib import Path
 import yaml
 
@@ -47,13 +48,13 @@ def main():
         algorithms_list = input_settings_map['algorithms']
         datasets = input_settings_map['datasets']
         
-    config_map_out = config_map.copy()
+    config_map_out = deepcopy(config_map)
     for dataset in datasets:
         for idx in range(len(algorithms_list)):
             #print(dataset)
             #print(idx)
-            config_map_out['input_settings']['datasets'] = [dataset]
-            config_map_out['input_settings']['algorithms'] = [algorithms_list[idx]]
+            config_map_out['input_settings']['datasets'] = [deepcopy(dataset)]
+            config_map_out['input_settings']['algorithms'] = [deepcopy(algorithms_list[idx])]
             config_map_out['input_settings']['algorithms'][0]['params']['should_run'] = [True]
 
             # create one config for this algorithm on this dataset
@@ -86,6 +87,25 @@ def main():
                         with open(config_file_out,'w') as ofh:
                             yaml.dump(config_map_out,ofh,default_flow_style=False)
                     
+            # if more than random seeds is specified, create one config for each random seed of this algorithm on this dataset
+            random_seed_list = algorithms_list[idx]['params'].get('randomSeedList',None)
+            if (random_seed_list!=None):
+                for seed in random_seed_list[0].split(','):
+                    run_dir = 'random_seed_'+seed
+                    config_map_out['input_settings']['algorithms'][0]['params']['run_dir'] = [run_dir]
+                    config_map_out['input_settings']['algorithms'][0]['params']['randomSeedList'] = [seed]
+                    config_file_dir = os.path.join(opts.config_split_dir,dataset['name'],algorithms_list[idx]['name'],run_dir)
+                    Path(config_file_dir).mkdir(parents=True,exist_ok=True)
+                    config_file_out = os.path.join(config_file_dir,'config.yaml')
+                    print(config_file_out)
+                    if os.path.exists(config_file_out):
+                        if opts.replace_existing:
+                            with open(config_file_out,'w') as ofh:
+                                yaml.dump(config_map_out,ofh,default_flow_style=False)
+                    else:
+                        with open(config_file_out,'w') as ofh:
+                            yaml.dump(config_map_out,ofh,default_flow_style=False)
 
+                            
 if __name__ == '__main__':
   main()
