@@ -16,7 +16,7 @@ def generateInputs(RunnerObj):
     print('Expression data: ',str(RunnerObj.inputDir.joinpath(RunnerObj.exprData)))
     ExpressionData = pd.read_csv(RunnerObj.inputDir.joinpath(RunnerObj.exprData),
                                  header = 0, index_col = 0)
-    if not RunnerObj.inputDir.joinpath(algName,runDir,"ExpressionData.csv").exists():
+    if not RunnerObj.inputDir.joinpath(algName,runDir,"ExpressionData.tsv").exists():
         ExpressionData.to_csv(RunnerObj.inputDir.joinpath(algName,runDir,"ExpressionData.tsv"),
                              sep = '\t', header  = True, index = True)
 
@@ -100,10 +100,11 @@ def parseOutput(RunnerObj):
     outDir = "outputs/"+str(RunnerObj.inputDir).split("inputs/")[1]+"/"+algName+"/"+('' if runDir=='' else runDir+"/")
 
     # Read output and reformat
-    netDF = pd.read_csv(Path(outDir).joinpath('network.tsv.gz'),compression='gzip',
-                        sep='\t',header=0)    
-    outDF = netDF[['regulator','target','combined_confidences']].copy()
-    outDF = outDF.sort_values(by=['combined_confidences','target','regulator'], ascending=[False,True,True])
-    outDF.to_csv(Path(outDir).joinpath('rankedEdges.csv'),
-                 sep='\t',index=False,header=['Gene1','Gene2','EdgeWeight'])
+    outFile = Path(outDir).joinpath('network.tsv.gz')
+    if outFile.exists():
+        netDF = pd.read_csv(outFile,compression='gzip',sep='\t',header=0)    
+        outDF = netDF[['regulator','target','combined_confidences']].copy()
+        outDF = outDF.sort_values(by=['combined_confidences','target','regulator'], ascending=[False,True,True])
+        outDF.to_csv(Path(outDir).joinpath('rankedEdges.csv'),
+                     sep='\t',index=False,header=['Gene1','Gene2','EdgeWeight'])
                                           
