@@ -38,7 +38,7 @@ mamba create -y --name BEELINE python=3.7.1 r=3.6 --file ../requirements.txt
 conda activate BEELINE
 R -e "install.packages('https://cran.r-project.org/src/contrib/PRROC_1.3.1.tar.gz', type = 'source')"
 R -e "install.packages('remotes',repos='http://cran.us.r-project.org')"
-R -e "remotes::install_version('precrec',version='0.12.7', repos='https://cran.us.r-project.org')"
+R -e "remotes::install_version('precrec',version='0.12.7', repos='https://cloud.r-project.org')"
 ```
 
 - Inside singularity: confirm locations of python and R
