@@ -20,7 +20,7 @@ mkdir -p ${EXT3_DIR}
 
 #for ALG in ARBORETO GRISLI GRNVBEM JUMP3 LEAP PIDC PNI PPCOR SINGE SCNS SCODE SCRIBE SINCERITIES ; do
 # for ALG in PPCOR LEAP PIDC SCODE SINCERITIES ; do
-for ALG in ; do
+for ALG in $BASEDIR/Algorithms/* ; do
     cd $BASEDIR/Algorithms/${ALG}
     docker build -q -t ${ALG,,}:base .
     echo "Docker container for ${ALG} is built and tagged as ${ALG,,}:base"
